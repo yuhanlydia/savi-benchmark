@@ -10,13 +10,16 @@ def test_empty_report_is_explicitly_insufficient():
 def test_recommendation_uses_natural_eos_lengths_only():
     rows = [
         {"problem_id": "a", "generated_tokens": 1100, "ended_with_eos": True,
-         "parsed_answer_normalized": "1"},
+         "parsed_answer_normalized": "1", "has_candidate_answer": True,
+         "closed_thinking_stage": True},
         {"problem_id": "b", "generated_tokens": 8192, "ended_with_eos": False,
          "parsed_answer_normalized": ""},
     ]
     report = build_eos_report(rows, quantum=256)
     assert report["recommended_trajectory_budget"] == 1536
     assert report["ended_with_eos_fraction"] == 0.5
+    assert report["candidate_answer_fraction"] == 0.5
+    assert report["closed_thinking_stage_fraction"] == 0.5
     assert report["recommendation_status"] == "natural_eos_observed"
 
 
