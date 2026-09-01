@@ -19,13 +19,6 @@ def reasoning_prompt(problem: str, trajectory_budget: int, announce_budget: bool
         "Keep the reasoning concise enough to fit. "
         if announce_budget else ""
     )
-
-
-def natural_stop_ids(configured_eos: int | list[int], thinking_end_id: int) -> list[int]:
-    stop_ids = list(configured_eos) if isinstance(configured_eos, list) else [configured_eos]
-    if thinking_end_id not in stop_ids:
-        stop_ids.append(thinking_end_id)
-    return stop_ids
     return (
         "You are taking a mathematics contest. This is the reasoning stage. "
         + budget_text
@@ -33,6 +26,13 @@ def natural_stop_ids(configured_eos: int | list[int], thinking_end_id: int) -> l
         "the answer. Make the intended final answer easy to identify.\n\nProblem:\n"
         + problem
     )
+
+
+def natural_stop_ids(configured_eos: int | list[int], thinking_end_id: int) -> list[int]:
+    stop_ids = list(configured_eos) if isinstance(configured_eos, list) else [configured_eos]
+    if thinking_end_id not in stop_ids:
+        stop_ids.append(thinking_end_id)
+    return stop_ids
 
 
 def build_jobs(config: dict[str, Any], manifest: dict[str, Any]) -> list[dict[str, Any]]:
