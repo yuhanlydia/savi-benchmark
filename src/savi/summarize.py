@@ -16,7 +16,9 @@ def summarize(config):
     rows = read_jsonl(config["output"]["continuations"])
     telemetry_path = root / "telemetry.jsonl"
     telemetry = read_jsonl(telemetry_path) if telemetry_path.exists() else []
-    provenance_path = root / "run_provenance.json"
+    provenance_path = root / "execution_provenance.json"
+    if not provenance_path.exists():
+        provenance_path = root / "run_provenance.json"
     provenance = json.loads(provenance_path.read_text()) if provenance_path.exists() else None
     disposition_path = root / "run_disposition.json"
     disposition = json.loads(disposition_path.read_text()) if disposition_path.exists() else None

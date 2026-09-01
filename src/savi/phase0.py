@@ -297,13 +297,6 @@ def main() -> None:
     jobs = build_jobs(config, manifest)
     plan_path = Path(config["output"]["root"]) / "jobs.json"
     write_json(plan_path, jobs)
-    provenance_path = Path(config["output"]["root"]) / "run_provenance.json"
-    if not provenance_path.exists():
-        write_once(args.config, provenance_path)
-    config_snapshot = Path(config["output"]["root"]) / "config.snapshot.yaml"
-    if not config_snapshot.exists():
-        config_snapshot.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(args.config, config_snapshot)
     prefix_count = (
         manifest["problem_count"]
         * len(config["experiment"]["spent_budgets"])
@@ -314,6 +307,13 @@ def main() -> None:
     if args.execute:
         if args.max_hours is not None and args.max_hours <= 0:
             parser.error("--max-hours must be positive")
+        provenance_path = Path(config["output"]["root"]) / "execution_provenance.json"
+        if not provenance_path.exists():
+            write_once(args.config, provenance_path)
+        config_snapshot = Path(config["output"]["root"]) / "config.snapshot.yaml"
+        if not config_snapshot.exists():
+            config_snapshot.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(args.config, config_snapshot)
         execute(config, jobs, max_hours=args.max_hours)
 
 
