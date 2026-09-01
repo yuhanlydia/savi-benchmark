@@ -51,9 +51,17 @@ The first two complete cells are:
 |---:|---|---:|---:|
 | 2048 | 0.00, 0.00, 0.00, 0.00 | 0.00 | 0/4 |
 | 4096 | 1.00, 0.75, 0.50, 1.00 | 0.50 | 0/4 |
+| 6144 | 1.00, 1.00, 1.00, 1.00 | 0.00 | audited separately |
 
 Across these two cells, the original raw range gate passes (1/2 cells), but the
-pooled-binomial Monte Carlo correction does not (`p=0.441`; expected null range
-fraction 0.220). The 4096-token cell is therefore an encouraging aliasing
-example, not yet statistically sufficient evidence. Additional cells and the
-official judge are required.
+pooled-binomial Monte Carlo correction does not (`p=0.441`; with all three
+cells, expected null range fraction 0.147). The 4096-token cell is therefore an
+encouraging aliasing example, not yet statistically sufficient evidence.
+
+The allocation-aligned diagnostic is stronger at spent 6144: all four states
+reach `Q(s,+2048)=1`, but their immediate values are `[0,1,1,1]`, so continuation
+gains are `[1,0,0,0]`. Across the three cells, 2/3 have continuation-gain range
+at least 0.5. This diagnostic was added after observing the distinction and is
+not substituted for preregistered Gate A. A same-seed, higher-K replication is
+used to reduce continuation sampling noise. Additional problems and the
+official judge remain required.
