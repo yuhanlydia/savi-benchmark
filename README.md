@@ -92,6 +92,11 @@ The runner executes only one 128-token chunk, invalidates only that problem's
 cached state representation, and replans across all six problems. It receives
 no online correctness feedback.
 
+Use `--frozen-index` for the preregistered non-replanning ablation. The
+`savi.ablations.state_shuffle` transform performs a deterministic derangement
+within each `(problem, spent-budget)` cell while preserving labels and all
+budget/problem metadata.
+
 ## Important compute note
 
 Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with KV cache.

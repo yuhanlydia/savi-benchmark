@@ -17,6 +17,7 @@ def critic_rows(features: dict[str, Any], spent: int, horizons: list[int]) -> li
 def run_suite(
     problems: list[dict[str, Any]], runner: QwenRunner, ensemble: ValueEnsemble,
     *, shared_budget: int, horizons: list[int], chunk: int, beta: float, seed: int,
+    dynamic: bool = True,
 ) -> dict[str, Any]:
     if len(problems) != 6:
         raise ValueError("R3 suite must contain exactly six problems")
@@ -26,6 +27,7 @@ def run_suite(
         raise ValueError("invalid chunk or shared budget")
     prefixes = {row["problem_id"]: [] for row in problems}
     feature_cache: dict[str, dict[str, Any]] = {}
+    estimate_cache = {}
     trajectory = []
     spent_total = 0
     step = 0
@@ -33,11 +35,17 @@ def run_suite(
     while spent_total < shared_budget:
         estimates = []
         for problem_id, problem in by_id.items():
+            if not dynamic and problem_id in estimate_cache:
+                estimates.append(estimate_cache[problem_id])
+                continue
             if problem_id not in feature_cache:
                 feature_cache[problem_id] = runner.state_features(problem["problem"], prefixes[problem_id])
             rows = critic_rows(feature_cache[problem_id], len(prefixes[problem_id]), horizons)
             means, stds = ensemble.predict(rows)
-            estimates.append(state_estimate_from_predictions(problem_id, horizons, means, stds))
+            estimate = state_estimate_from_predictions(problem_id, horizons, means, stds)
+            estimates.append(estimate)
+            if not dynamic:
+                estimate_cache[problem_id] = estimate
         selected, lookahead, index = choose_problem(estimates, beta=beta)
         execution = min(chunk, shared_budget - spent_total)
         generation_seed = stable_seed(seed, step, selected, len(prefixes[selected]))
@@ -59,7 +67,8 @@ def run_suite(
         answers.append({"problem_id": problem_id, "spent_tokens": len(prefixes[problem_id]),
                         "finalizer_output": output, "parsed_answer_normalized": normalize_answer(output)})
     return {"suite_id": problems[0]["suite_id"], "shared_budget": shared_budget,
-            "chunk": chunk, "beta": beta, "trajectory": trajectory, "answers": answers}
+            "chunk": chunk, "beta": beta, "dynamic": dynamic,
+            "trajectory": trajectory, "answers": answers}
 
 
 def main():
@@ -73,12 +82,14 @@ def main():
     parser.add_argument("--beta", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=20260901)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--frozen-index", action="store_true")
     args = parser.parse_args(); config = load_yaml(args.config)
     problems = [row for row in read_jsonl(config["data"]["path"])
                 if row["suite_id"] == args.suite_id]
     result = run_suite(problems, QwenRunner(config), ValueEnsemble.load(args.critic),
                        shared_budget=args.shared_budget, horizons=args.horizons,
-                       chunk=args.chunk, beta=args.beta, seed=args.seed)
+                       chunk=args.chunk, beta=args.beta, seed=args.seed,
+                       dynamic=not args.frozen_index)
     append_jsonl(args.output, [result]); print(json.dumps(result, indent=2))
 
 
