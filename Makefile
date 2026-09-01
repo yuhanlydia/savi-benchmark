@@ -26,3 +26,6 @@ budget-critic:
 
 monitor:
 	.venv/bin/python -m savi.monitor --config configs/phase0_math.yaml
+
+telemetry:
+	.venv/bin/python -m savi.telemetry --config configs/phase0_math.yaml
