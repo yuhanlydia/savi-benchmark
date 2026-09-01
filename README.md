@@ -4,6 +4,21 @@ Phase 0 tests whether two Qwen3-8B reasoning attempts for the same R³-Bench
 Math problem and the same spent-token budget have materially different value
 of another 256 reasoning tokens.
 
+## Setup
+
+On an Ubuntu/CUDA machine with Python 3.10+, a C compiler and sufficient disk:
+
+```bash
+git clone --recursive https://github.com/yuhanlydia/savi-benchmark.git
+cd savi-benchmark
+bash scripts/bootstrap.sh
+```
+
+The bootstrap resolves both the R³ submodule commit and the exact Hugging Face
+revision from `resources.lock.json`, then runs the test suite. The default NF4
+condition needs roughly 8GB runtime VRAM; downloaded BF16 shards occupy about
+16GB on disk.
+
 ## Reproducibility contract
 
 - Benchmark: official `NineAbyss/R-3-Bench`, pinned in
