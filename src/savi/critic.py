@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import joblib
+import json
 import numpy as np
 import torch
 from sklearn.decomposition import PCA
@@ -71,3 +72,31 @@ def fit_feature_pipeline(
     ], dtype=np.float32)
     scaler = StandardScaler().fit(np.concatenate([projected, scalars], axis=1))
     return FeaturePipeline(pca, scaler, hidden_key=hidden_key, state_aware=state_aware)
+
+
+class ValueEnsemble:
+    def __init__(self, pipeline: FeaturePipeline, heads: list[ValueMLP]) -> None:
+        if not heads:
+            raise ValueError("ensemble must contain at least one head")
+        self.pipeline = pipeline
+        self.heads = heads
+        for head in heads:
+            head.eval()
+
+    @classmethod
+    def load(cls, directory: str | Path) -> "ValueEnsemble":
+        directory = Path(directory)
+        pipeline = joblib.load(directory / "feature_pipeline.joblib")
+        report = json.loads((directory / "training_report.json").read_text())
+        heads = []
+        for item in report["heads"]:
+            model = ValueMLP(int(report["input_dim"]), int(report["hidden_size"]))
+            model.load_state_dict(torch.load(directory / f"head_{item['head']}.pt", map_location="cpu"))
+            heads.append(model)
+        return cls(pipeline, heads)
+
+    def predict(self, rows: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]:
+        features = torch.tensor(self.pipeline.transform(rows))
+        with torch.no_grad():
+            predictions = torch.stack([torch.sigmoid(head(features)) for head in self.heads]).numpy()
+        return predictions.mean(axis=0), predictions.std(axis=0, ddof=0)

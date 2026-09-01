@@ -87,7 +87,8 @@ def main():
         metrics.append({"head": head, "validation_binomial_nll": best, "epochs": epoch + 1})
     report = {"representation": args.representation,
               "train_suites": sorted(train_suites), "validation_suites": sorted(val_suites),
-              "test_suites": sorted(test_suites), "heads": metrics, "input_dim": x_train.shape[1]}
+              "test_suites": sorted(test_suites), "heads": metrics,
+              "input_dim": x_train.shape[1], "hidden_size": int(training["hidden_size"])}
     write_json(output / "training_report.json", report); print(json.dumps(report, indent=2))
 
 
