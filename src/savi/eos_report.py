@@ -27,6 +27,12 @@ def build_eos_report(rows: list[dict], quantum: int = 256) -> dict:
     parseable = np.asarray([bool(row.get("parsed_answer_normalized")) for row in rows])
     candidates = np.asarray([bool(row.get("has_candidate_answer")) for row in rows])
     closed_thinking = np.asarray([bool(row.get("closed_thinking_stage")) for row in rows])
+    tail_diversities = []
+    for row in rows:
+        token_ids = row.get("trace_token_ids") or []
+        tail = token_ids[-512:]
+        if tail:
+            tail_diversities.append(len(set(tail)) / len(tail))
     ended_lengths = lengths[ended]
     if len(ended_lengths):
         recommended = _round_up(float(ended_lengths.max()), quantum) + quantum
@@ -39,6 +45,9 @@ def build_eos_report(rows: list[dict], quantum: int = 256) -> dict:
             "parseable_fraction": float(parseable.mean()),
             "candidate_answer_fraction": float(candidates.mean()),
             "closed_thinking_stage_fraction": float(closed_thinking.mean()),
+            "mean_unique_token_fraction_last_512": (
+                float(np.mean(tail_diversities)) if tail_diversities else None
+            ),
             "generated_tokens": {"min": int(lengths.min()),
                                  "median": float(np.median(lengths)), "max": int(lengths.max())},
             "recommended_trajectory_budget": int(recommended),

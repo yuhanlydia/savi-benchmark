@@ -11,7 +11,7 @@ def test_recommendation_uses_natural_eos_lengths_only():
     rows = [
         {"problem_id": "a", "generated_tokens": 1100, "ended_with_eos": True,
          "parsed_answer_normalized": "1", "has_candidate_answer": True,
-         "closed_thinking_stage": True},
+         "closed_thinking_stage": True, "trace_token_ids": [1, 2, 2, 3]},
         {"problem_id": "b", "generated_tokens": 8192, "ended_with_eos": False,
          "parsed_answer_normalized": ""},
     ]
@@ -20,6 +20,7 @@ def test_recommendation_uses_natural_eos_lengths_only():
     assert report["ended_with_eos_fraction"] == 0.5
     assert report["candidate_answer_fraction"] == 0.5
     assert report["closed_thinking_stage_fraction"] == 0.5
+    assert report["mean_unique_token_fraction_last_512"] == 0.75
     assert report["recommendation_status"] == "natural_eos_observed"
 
 
