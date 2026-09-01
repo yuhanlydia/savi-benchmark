@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import platform
 import subprocess
 import sys
@@ -30,6 +31,8 @@ def collect(config_path: str | Path) -> dict:
     import torch
     import transformers
 
+    resources_path = Path("resources.lock.json")
+    resources = json.loads(resources_path.read_text()) if resources_path.exists() else None
     return {
         "created_unix": time.time(),
         "config_path": str(config_path),
@@ -37,6 +40,7 @@ def collect(config_path: str | Path) -> dict:
         "code_commit": _command("git", "rev-parse", "HEAD"),
         "code_dirty": bool(_command("git", "status", "--porcelain")),
         "r3bench_commit": _command("git", "-C", "third_party/R-3-Bench", "rev-parse", "HEAD"),
+        "locked_resources": resources,
         "python": sys.version,
         "platform": platform.platform(),
         "torch": torch.__version__,
