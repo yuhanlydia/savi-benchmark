@@ -1,0 +1,52 @@
+experiment:
+  name: budget_calibration_math_qwen3_8b
+  seed: 20260903
+  suite_count: 1
+  spent_budgets: [512, 1024, 2048]
+  prefixes_per_cell: 2
+  continuation_horizons: [0, 512]
+  continuations_per_state: 2
+  trajectory_budget: 2560
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 96
+  recent_window: 32
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+  split_manifest: artifacts/budget_calibration_math/manifest.json
+
+output:
+  root: outputs/budget_calibration_math
+  prefixes: outputs/budget_calibration_math/prefixes.jsonl
+  continuations: outputs/budget_calibration_math/continuations.jsonl
+  state_values: outputs/budget_calibration_math/state_values.jsonl
+  problem_features: outputs/budget_calibration_math/problem_features.jsonl
+  report: outputs/budget_calibration_math/gates.json
+  critic_dir: outputs/budget_calibration_math/critic
+
+training:
+  pca_components: 64
+  hidden_size: 128
+  ensemble_heads: 5
+  epochs: 200
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 20
+  train_suite_fraction: 0.7
+  validation_suite_fraction: 0.15
+  bootstrap_seed: 20260904
+
+gates:
+  range_threshold: 0.5
+  min_range_cell_fraction: 0.20
+  min_decision_flip_rate: 0.25
+  dfr_bootstrap_draws: 1000

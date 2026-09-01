@@ -66,6 +66,17 @@ benchmark provenance before loading the model.
 - Predictor and scheduler gates begin only after the Phase 0 labels pass an
   official-equivalence scoring audit.
 
+If the preregistered floor-risk diagnostic triggers, run the separately labeled
+calibration grid; never merge it into Phase 0:
+
+```bash
+python -m savi.phase0 --config configs/budget_calibration_math.yaml --execute
+```
+
+This calibration uses one complete suite, spent budgets 512/1024/2048 and a
+512-token continuation. Its purpose is to locate a non-degenerate budget range,
+not to support the confirmatory aliasing claim.
+
 ## Important compute note
 
 Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with KV cache.
