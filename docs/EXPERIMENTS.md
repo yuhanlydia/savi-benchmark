@@ -37,6 +37,20 @@ flag the Phase 0 grid as underpowered and run a separately labeled calibration
 condition. This diagnostic does not retroactively replace the preregistered
 Gate sample.
 
+### Natural-EOS diagnostic
+
+Fixed-length conditions that trigger the budget-floor check are followed by a
+separately labeled natural-EOS probe. Summarize completed rows with:
+
+```bash
+python -m savi.eos_report \
+  --input outputs/eos_probe_math/results.jsonl \
+  --output outputs/eos_probe_math/report.json
+```
+
+If every sample hits the cap, the report labels the suggested next grid as a
+lower bound rather than treating the cap as a measured natural reasoning length.
+
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed
 through the official R³ production equivalence judge.
