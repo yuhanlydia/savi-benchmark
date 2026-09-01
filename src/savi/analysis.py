@@ -67,7 +67,11 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
     for (problem, spent, _), mvi in state_mvi.items():
         del mvi
         cells[(problem, spent)].append(by_state[(problem, spent, _)][analysis_horizon])
-    ranges = {key: max(items) - min(items) for key, items in cells.items() if items}
+    expected_prefixes = int(config["experiment"]["prefixes_per_cell"])
+    ranges = {
+        key: max(items) - min(items)
+        for key, items in cells.items() if len(items) == expected_prefixes
+    }
     threshold = float(config["gates"]["range_threshold"])
     range_fraction = float(np.mean([value >= threshold for value in ranges.values()])) if ranges else 0.0
 
@@ -77,7 +81,7 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
             continuation_cells[(row["problem_id"], row["spent_budget"])].append(
                 (row["successes"], row["trials"])
             )
-    eligible = [cell for cell in continuation_cells.values() if len(cell) == 4]
+    eligible = [cell for cell in continuation_cells.values() if len(cell) == expected_prefixes]
     null_draws = int(config["gates"].get("dispersion_null_draws", 10_000))
     null_rng = np.random.default_rng(int(config["experiment"]["seed"]) + 17)
     null_fractions = np.zeros(null_draws, dtype=float)
@@ -88,7 +92,9 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
             trials = sum(item[1] for item in cell)
             pooled = successes / trials if trials else 0.0
             per_state_trials = np.asarray([item[1] for item in cell])
-            simulated = null_rng.binomial(per_state_trials, pooled, size=(null_draws, 4)) / per_state_trials
+            simulated = null_rng.binomial(
+                per_state_trials, pooled, size=(null_draws, expected_prefixes)
+            ) / per_state_trials
             null_hits[:, cell_index] = simulated.max(1) - simulated.min(1) >= threshold
         null_fractions = null_hits.mean(axis=1)
     null_expected = float(null_fractions.mean()) if eligible else 0.0

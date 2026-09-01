@@ -68,3 +68,15 @@ def test_partial_analysis_drops_incomplete_states():
     filtered = complete_state_rows([immediate, *complete, incomplete], config)
     assert len(filtered) == 5
     assert {row["state_id"] for row in filtered} == {"complete"}
+
+
+def test_aliasing_range_requires_complete_prefix_cell():
+    config = load_yaml("configs/phase0_math.yaml")
+    values = aggregate([
+        _row("p1", "suite", 0, 0, False),
+        *[_row("p1", "suite", 0, 256, True) for _ in range(4)],
+    ])
+    config["gates"]["dispersion_null_draws"] = 10
+    report = analyze(config, values)
+    assert report["state_count"] == 1
+    assert report["same_budget_cells"] == 0
