@@ -9,6 +9,7 @@ from typing import Any
 
 from .io import append_jsonl, load_yaml, read_jsonl, stable_seed, write_json
 from .manifest import build_manifest
+from .provenance import write_once
 
 
 def build_jobs(config: dict[str, Any], manifest: dict[str, Any]) -> list[dict[str, Any]]:
@@ -274,6 +275,9 @@ def main() -> None:
     jobs = build_jobs(config, manifest)
     plan_path = Path(config["output"]["root"]) / "jobs.json"
     write_json(plan_path, jobs)
+    provenance_path = Path(config["output"]["root"]) / "run_provenance.json"
+    if not provenance_path.exists():
+        write_once(args.config, provenance_path)
     prefix_count = (
         manifest["problem_count"]
         * len(config["experiment"]["spent_budgets"])
