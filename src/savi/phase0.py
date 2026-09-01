@@ -198,14 +198,21 @@ def normalize_answer(text: str) -> str:
     return value
 
 
+def job_key(row: dict[str, Any]) -> tuple[str, int, int]:
+    return row["state_id"], int(row["horizon"]), int(row["continuation_id"])
+
+
+def pending_jobs(jobs: list[dict[str, Any]], completed_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    completed = {job_key(row) for row in completed_rows}
+    return [job for job in jobs if job_key(job) not in completed]
+
+
 def execute(config: dict[str, Any], jobs: list[dict[str, Any]], max_hours: float | None = None) -> None:
     data = {row["problem_id"]: row for row in read_jsonl(config["data"]["path"])}
     runner = QwenRunner(config)
     output_path = Path(config["output"]["continuations"])
-    completed = set()
-    if output_path.exists():
-        for row in read_jsonl(output_path):
-            completed.add((row["state_id"], row["horizon"], row["continuation_id"]))
+    completed_rows = read_jsonl(output_path) if output_path.exists() else []
+    completed = {job_key(row) for row in completed_rows}
     prefix_cache: dict[str, list[int]] = {}
     prefix_features: dict[str, dict[str, Any]] = {}
     prefix_path = Path(config["output"]["prefixes"])
@@ -220,7 +227,7 @@ def execute(config: dict[str, Any], jobs: list[dict[str, Any]], max_hours: float
             print(json.dumps({"status": "time_budget_reached", "max_hours": max_hours,
                               "completed_jobs": len(completed)}), flush=True)
             return
-        key = (job["state_id"], job["horizon"], job["continuation_id"])
+        key = job_key(job)
         if key in completed:
             continue
         problem_row = data[job["problem_id"]]
