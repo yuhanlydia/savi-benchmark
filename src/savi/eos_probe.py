@@ -30,11 +30,20 @@ def main():
             seed = stable_seed(config["experiment"]["seed"], problem_id, sample_id)
             started = time.monotonic()
             tokens, ended = runner.generate_until_stop(problems[problem_id]["problem"], args.max_tokens, seed)
+            trace_text = runner.tokenizer.decode(tokens, skip_special_tokens=True)
+            trace_text_with_special_tokens = runner.tokenizer.decode(tokens, skip_special_tokens=False)
             finalizer = runner.finalize(tokens)
             append_jsonl(output, [{
                 "problem_id": problem_id, "sample_id": sample_id, "seed": seed,
                 "max_tokens": args.max_tokens, "generated_tokens": len(tokens),
                 "ended_with_eos": ended, "elapsed_seconds": time.monotonic() - started,
+                "trace_token_ids": tokens,
+                "trace_text": trace_text,
+                "trace_text_with_special_tokens": trace_text_with_special_tokens,
+                "has_candidate_answer": bool(
+                    "\\\\boxed" in trace_text or "final answer" in trace_text.casefold()
+                ),
+                "closed_thinking_stage": "</think>" in trace_text_with_special_tokens,
                 "finalizer_output": finalizer,
                 "parsed_answer_normalized": normalize_answer(finalizer),
             }])
