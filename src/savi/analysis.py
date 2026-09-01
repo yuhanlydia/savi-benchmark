@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+from pathlib import Path
 from collections import defaultdict
 from typing import Any
 
@@ -14,7 +16,9 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     meta: dict[tuple[str, int, int, int], dict[str, Any]] = {}
     for row in rows:
         key = (row["problem_id"], row["spent_budget"], row["prefix_id"], row["horizon"])
-        groups[key].append(bool(row["correct_exact_normalized"]))
+        official = row.get("correct_official")
+        outcome = official if official is not None else row["correct_exact_normalized"]
+        groups[key].append(bool(outcome))
         meta[key] = row
     values = []
     for key, outcomes in groups.items():
@@ -77,9 +81,18 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/phase0_math.yaml")
+    parser.add_argument("--allow-partial", action="store_true")
     args = parser.parse_args()
     config = load_yaml(args.config)
     rows = read_jsonl(config["output"]["continuations"])
+    keys = {(row["state_id"], row["horizon"], row["continuation_id"]) for row in rows}
+    jobs_path = Path(config["output"]["root"]) / "jobs.json"
+    planned = len(json.loads(jobs_path.read_text(encoding="utf-8")))
+    if len(keys) != planned and not args.allow_partial:
+        raise SystemExit(
+            f"Refusing confirmatory analysis: {len(keys)}/{planned} jobs complete. "
+            "Use --allow-partial for a clearly non-confirmatory diagnostic."
+        )
     values = aggregate(rows)
     report = analyze(config, values)
     write_json(config["output"]["state_values"], values)

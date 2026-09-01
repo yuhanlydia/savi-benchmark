@@ -30,3 +30,9 @@ def test_gate_a_uses_continuation_probability_not_mvi_range():
     assert report["range_ge_0_5_fraction"] == 1.0
     assert report["gate_0_pass"] is True
 
+
+def test_official_label_overrides_exact_pilot_label():
+    row = _row("p1", "suite", 0, 256, False)
+    row["correct_official"] = True
+    values = aggregate([row])
+    assert values[0]["q"] == 1.0

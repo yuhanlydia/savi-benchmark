@@ -42,6 +42,7 @@ python -m savi.monitor --config configs/phase0_math.yaml
 
 The runner is append-only and resumes completed `(state, horizon, repeat)`
 tuples. Do not report Gate A or DFR from partial output.
+The analyzer enforces this by default; `--allow-partial` is diagnostic only.
 
 For a bounded ten-hour collection window:
 
