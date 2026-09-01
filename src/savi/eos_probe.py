@@ -1,11 +1,22 @@
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from pathlib import Path
 
-from .io import append_jsonl, load_yaml, read_jsonl, stable_seed
+from .io import append_jsonl, load_yaml, read_jsonl, stable_seed, write_json
 from .phase0 import QwenRunner, normalize_answer
+from .provenance import sha256, write_once
+
+
+def ensure_contract(path: Path, contract: dict) -> None:
+    if path.exists():
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        if existing != contract:
+            raise ValueError(f"probe contract mismatch for existing output: {path}")
+        return
+    write_json(path, contract)
 
 
 def main():
@@ -22,6 +33,20 @@ def main():
     if missing:
         raise ValueError(f"unknown problem ids: {sorted(missing)}")
     output = Path(args.output)
+    contract = {
+        "config_path": args.config,
+        "config_sha256": sha256(args.config),
+        "problem_ids": args.problem_id,
+        "samples": args.samples,
+        "max_tokens": args.max_tokens,
+        "announce_budget": args.announce_budget,
+        "seed": config["experiment"]["seed"],
+        "model_id": config["model"]["id"],
+    }
+    ensure_contract(output.with_suffix(output.suffix + ".contract.json"), contract)
+    provenance_path = output.with_suffix(output.suffix + ".provenance.json")
+    if not provenance_path.exists():
+        write_once(args.config, provenance_path)
     completed = {(row["problem_id"], row["sample_id"]) for row in read_jsonl(output)} if output.exists() else set()
     runner = QwenRunner(config)
     for problem_id in args.problem_id:
