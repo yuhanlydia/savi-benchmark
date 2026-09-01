@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--problem-id", action="append", required=True)
     parser.add_argument("--samples", type=int, default=2)
     parser.add_argument("--max-tokens", type=int, default=8192)
+    parser.add_argument("--announce-budget", action="store_true")
     parser.add_argument("--output", default="outputs/eos_probe_math/results.jsonl")
     args = parser.parse_args(); config = load_yaml(args.config)
     problems = {row["problem_id"]: row for row in read_jsonl(config["data"]["path"])}
@@ -29,13 +30,17 @@ def main():
                 continue
             seed = stable_seed(config["experiment"]["seed"], problem_id, sample_id)
             started = time.monotonic()
-            tokens, ended = runner.generate_until_stop(problems[problem_id]["problem"], args.max_tokens, seed)
+            tokens, ended = runner.generate_until_stop(
+                problems[problem_id]["problem"], args.max_tokens, seed,
+                announce_budget=args.announce_budget,
+            )
             trace_text = runner.tokenizer.decode(tokens, skip_special_tokens=True)
             trace_text_with_special_tokens = runner.tokenizer.decode(tokens, skip_special_tokens=False)
             finalizer = runner.finalize(tokens)
             append_jsonl(output, [{
                 "problem_id": problem_id, "sample_id": sample_id, "seed": seed,
                 "max_tokens": args.max_tokens, "generated_tokens": len(tokens),
+                "announced_budget_in_prompt": args.announce_budget,
                 "ended_with_eos": ended, "elapsed_seconds": time.monotonic() - started,
                 "trace_token_ids": tokens,
                 "trace_text": trace_text,

@@ -50,6 +50,9 @@ python -m savi.eos_report \
 
 If every sample hits the cap, the report labels the suggested next grid as a
 lower bound rather than treating the cap as a measured natural reasoning length.
+The natural-EOS probe omits a numeric budget from the prompt by default so the
+cap does not anchor response length. Add `--announce-budget` only for a
+separately labeled prompt-effect control.
 
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed

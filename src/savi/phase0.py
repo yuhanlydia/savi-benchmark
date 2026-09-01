@@ -13,6 +13,21 @@ from .manifest import build_manifest
 from .provenance import write_once
 
 
+def reasoning_prompt(problem: str, trajectory_budget: int, announce_budget: bool = True) -> str:
+    budget_text = (
+        f"Your total reasoning budget is limited to {trajectory_budget} tokens. "
+        "Keep the reasoning concise enough to fit. "
+        if announce_budget else ""
+    )
+    return (
+        "You are taking a mathematics contest. This is the reasoning stage. "
+        + budget_text
+        + "A second stage will receive only your stopped reasoning trace and format "
+        "the answer. Make the intended final answer easy to identify.\n\nProblem:\n"
+        + problem
+    )
+
+
 def build_jobs(config: dict[str, Any], manifest: dict[str, Any]) -> list[dict[str, Any]]:
     exp = config["experiment"]
     jobs = []
@@ -73,14 +88,8 @@ class QwenRunner:
         self.finalizer_max_tokens = int(model_cfg["finalizer_max_tokens"])
         self.trajectory_budget = int(config["experiment"]["trajectory_budget"])
 
-    def _prompt_ids(self, problem: str) -> Any:
-        content = (
-            "You are taking a mathematics contest. This is the reasoning stage. "
-            f"Your total reasoning budget is limited to {self.trajectory_budget} tokens. "
-            "Keep the reasoning concise enough to fit. A second stage "
-            "will receive only your stopped reasoning trace and format the answer. "
-            "Make the intended final answer easy to identify.\n\nProblem:\n" + problem
-        )
+    def _prompt_ids(self, problem: str, announce_budget: bool = True) -> Any:
+        content = reasoning_prompt(problem, self.trajectory_budget, announce_budget)
         text = self.tokenizer.apply_chat_template(
             [{"role": "user", "content": content}],
             tokenize=False,
@@ -102,9 +111,11 @@ class QwenRunner:
             )
         return output[0, input_ids.shape[1] :].tolist()
 
-    def generate_until_stop(self, problem: str, max_tokens: int, seed: int) -> tuple[list[int], bool]:
+    def generate_until_stop(
+        self, problem: str, max_tokens: int, seed: int, announce_budget: bool = False
+    ) -> tuple[list[int], bool]:
         self.torch.manual_seed(seed)
-        input_ids = self._prompt_ids(problem)
+        input_ids = self._prompt_ids(problem, announce_budget=announce_budget)
         with self.torch.inference_mode():
             output = self.model.generate(
                 input_ids,
