@@ -29,3 +29,6 @@ monitor:
 
 telemetry:
 	.venv/bin/python -m savi.telemetry --config configs/phase0_math.yaml
+
+summary:
+	.venv/bin/python -m savi.summarize --config configs/phase0_math.yaml

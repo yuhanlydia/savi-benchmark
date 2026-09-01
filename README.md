@@ -55,6 +55,7 @@ python -m savi.train_critic --config configs/phase0_math.yaml  # only after gate
 python -m savi.extract_problem_features --config configs/phase0_math.yaml
 python -m savi.train_critic --config configs/phase0_math.yaml --representation budget-only
 python -m savi.monitor --config configs/phase0_math.yaml
+python -m savi.summarize --config configs/phase0_math.yaml --output outputs/phase0_math/summary.json
 python -m savi.judge_handoff --config configs/phase0_math.yaml export --output outputs/judge_queue.jsonl
 ```
 
