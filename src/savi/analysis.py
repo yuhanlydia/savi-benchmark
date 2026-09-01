@@ -72,6 +72,21 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         key: max(items) - min(items)
         for key, items in cells.items() if len(items) == expected_prefixes
     }
+    cell_diagnostics = []
+    for (problem, spent), state_qs in sorted(cells.items()):
+        if len(state_qs) != expected_prefixes:
+            continue
+        matching_keys = [key for key in sorted(state_mvi)
+                         if key[0] == problem and key[1] == spent]
+        ordered_qs = [by_state[key][analysis_horizon] for key in matching_keys]
+        mvis = [state_mvi[key] for key in matching_keys]
+        cell_diagnostics.append({
+            "problem_id": problem,
+            "spent_budget": spent,
+            "continuation_q_by_state": ordered_qs,
+            "marginal_value_by_state": mvis,
+            "continuation_q_range": ranges[(problem, spent)],
+        })
     threshold = float(config["gates"]["range_threshold"])
     range_fraction = float(np.mean([value >= threshold for value in ranges.values()])) if ranges else 0.0
 
@@ -126,6 +141,7 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         "scoring": "exact-normalized pilot labels",
         "state_count": len(state_mvi),
         "same_budget_cells": len(ranges),
+        "cell_diagnostics": cell_diagnostics,
         "range_ge_0_5_fraction": range_fraction,
         "range_null_expected_fraction": null_expected,
         "range_excess_fraction": excess_fraction,
