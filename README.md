@@ -37,6 +37,8 @@ python -m savi.phase0 --config configs/phase0_math.yaml        # plan only
 python -m savi.phase0 --config configs/phase0_math.yaml --execute
 python -m savi.analysis --config configs/phase0_math.yaml
 python -m savi.train_critic --config configs/phase0_math.yaml  # only after gates pass
+python -m savi.extract_problem_features --config configs/phase0_math.yaml
+python -m savi.train_critic --config configs/phase0_math.yaml --representation budget-only
 python -m savi.monitor --config configs/phase0_math.yaml
 ```
 

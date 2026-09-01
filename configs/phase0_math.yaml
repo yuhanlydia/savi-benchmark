@@ -29,6 +29,7 @@ output:
   prefixes: outputs/phase0_math/prefixes.jsonl
   continuations: outputs/phase0_math/continuations.jsonl
   state_values: outputs/phase0_math/state_values.jsonl
+  problem_features: outputs/phase0_math/problem_features.jsonl
   report: outputs/phase0_math/gates.json
   critic_dir: outputs/phase0_math/critic
 

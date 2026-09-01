@@ -18,5 +18,11 @@ analyze:
 critic:
 	.venv/bin/python -m savi.train_critic --config configs/phase0_math.yaml
 
+problem-features:
+	.venv/bin/python -m savi.extract_problem_features --config configs/phase0_math.yaml
+
+budget-critic:
+	.venv/bin/python -m savi.train_critic --config configs/phase0_math.yaml --representation budget-only
+
 monitor:
 	.venv/bin/python -m savi.monitor --config configs/phase0_math.yaml

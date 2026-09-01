@@ -145,6 +145,17 @@ class QwenRunner:
             "recent_repetition_rate": float(repetition),
         }
 
+    def problem_features(self, problem: str) -> dict[str, Any]:
+        input_ids = self._prompt_ids(problem)
+        with self.torch.inference_mode():
+            outputs = self.model(
+                input_ids,
+                attention_mask=self.torch.ones_like(input_ids),
+                output_hidden_states=True,
+                use_cache=False,
+            )
+        return {"problem_hidden": outputs.hidden_states[-1][0, -1].float().cpu().tolist()}
+
     def finalize(self, trace_ids: list[int]) -> str:
         trace = self.tokenizer.decode(trace_ids, skip_special_tokens=True)
         content = (
