@@ -32,28 +32,33 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, Any]:
+    positive_horizons = [int(value) for value in config["experiment"]["continuation_horizons"]
+                         if int(value) > 0]
+    if len(positive_horizons) != 1:
+        raise ValueError("aliasing analysis requires exactly one positive continuation horizon")
+    analysis_horizon = positive_horizons[0]
     by_state: dict[tuple[str, int, int], dict[int, float]] = defaultdict(dict)
     for row in values:
         by_state[(row["problem_id"], row["spent_budget"], row["prefix_id"])][row["horizon"]] = row["q"]
     state_mvi = {}
     state_meta = {}
     for key, horizons in by_state.items():
-        if 0 in horizons and 256 in horizons:
-            state_mvi[key] = (horizons[256] - horizons[0]) / 256.0
+        if 0 in horizons and analysis_horizon in horizons:
+            state_mvi[key] = (horizons[analysis_horizon] - horizons[0]) / analysis_horizon
             state_meta[key] = next(row for row in values if
                                    (row["problem_id"], row["spent_budget"], row["prefix_id"]) == key)
 
     cells: dict[tuple[str, int], list[float]] = defaultdict(list)
     for (problem, spent, _), mvi in state_mvi.items():
         del mvi
-        cells[(problem, spent)].append(by_state[(problem, spent, _)][256])
+        cells[(problem, spent)].append(by_state[(problem, spent, _)][analysis_horizon])
     ranges = {key: max(items) - min(items) for key, items in cells.items() if items}
     threshold = float(config["gates"]["range_threshold"])
     range_fraction = float(np.mean([value >= threshold for value in ranges.values()])) if ranges else 0.0
 
     continuation_cells: dict[tuple[str, int], list[tuple[int, int]]] = defaultdict(list)
     for row in values:
-        if row["horizon"] == 256:
+        if row["horizon"] == analysis_horizon:
             continuation_cells[(row["problem_id"], row["spent_budget"])].append(
                 (row["successes"], row["trials"])
             )
@@ -96,6 +101,7 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
     dfr = float(np.mean(flips)) if flips else 0.0
     return {
         "schema_version": 1,
+        "analysis_horizon": analysis_horizon,
         "scoring": "exact-normalized pilot labels",
         "state_count": len(state_mvi),
         "same_budget_cells": len(ranges),

@@ -37,3 +37,18 @@ def test_official_label_overrides_exact_pilot_label():
     row["correct_official"] = True
     values = aggregate([row])
     assert values[0]["q"] == 1.0
+
+
+def test_analysis_horizon_comes_from_config():
+    rows = []
+    for problem_index in range(1, 7):
+        for prefix in range(4):
+            rows.append(_row(f"p{problem_index}", "suite", prefix, 0, False))
+            row = _row(f"p{problem_index}", "suite", prefix, 512, prefix >= 2)
+            rows.extend([dict(row) for _ in range(4)])
+    config = load_yaml("configs/phase0_math.yaml")
+    config["experiment"]["continuation_horizons"] = [0, 512]
+    config["gates"]["dispersion_null_draws"] = 20
+    config["gates"]["dfr_bootstrap_draws"] = 20
+    report = analyze(config, aggregate(rows))
+    assert report["analysis_horizon"] == 512
