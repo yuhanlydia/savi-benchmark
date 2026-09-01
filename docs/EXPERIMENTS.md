@@ -73,6 +73,11 @@ python -m savi.prefix_audit --config configs/phase0_math.yaml \
 Post-terminal prefixes are reported separately and are not evidence of
 within-reasoning state aliasing.
 
+Same-seed replication conditions can be checked at token level with
+`python -m savi.repro_check --left-config ... --right-config ...`. The report
+compares only shared state/job keys and separately reports prefix-token,
+continuation-token, and scored-outcome agreement.
+
 The exploratory `state_variance_boundary_math.yaml` condition is explicitly
 separate from the confirmatory Gate sample. It places one calibrated problem at
 2k/4k/6k spent tokens with a 2k continuation, after the natural-EOS diagnostic
