@@ -56,7 +56,8 @@ make phase0-10h
 The deadline is checked between atomic jobs. It never truncates a JSONL record;
 rerunning the same command resumes from the next incomplete tuple.
 Each run writes immutable code, config, dependency, CUDA, GPU, model and
-benchmark provenance before loading the model.
+benchmark provenance plus a byte-for-byte `config.snapshot.yaml` before loading
+the model.
 
 ## Preregistered gates
 

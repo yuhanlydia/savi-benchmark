@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import time
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -285,6 +286,10 @@ def main() -> None:
     provenance_path = Path(config["output"]["root"]) / "run_provenance.json"
     if not provenance_path.exists():
         write_once(args.config, provenance_path)
+    config_snapshot = Path(config["output"]["root"]) / "config.snapshot.yaml"
+    if not config_snapshot.exists():
+        config_snapshot.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(args.config, config_snapshot)
     prefix_count = (
         manifest["problem_count"]
         * len(config["experiment"]["spent_budgets"])
