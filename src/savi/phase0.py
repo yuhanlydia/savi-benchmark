@@ -91,6 +91,7 @@ class QwenRunner:
         with self.torch.inference_mode():
             output = self.model.generate(
                 input_ids,
+                attention_mask=self.torch.ones_like(input_ids),
                 max_new_tokens=budget,
                 min_new_tokens=budget,
                 **self.generation,
@@ -109,6 +110,7 @@ class QwenRunner:
         with self.torch.inference_mode():
             output = self.model.generate(
                 input_ids,
+                attention_mask=self.torch.ones_like(input_ids),
                 max_new_tokens=horizon,
                 min_new_tokens=horizon,
                 **self.generation,
@@ -120,7 +122,12 @@ class QwenRunner:
         prefix = self.torch.tensor([prefix_ids], device=self.model.device)
         input_ids = self.torch.cat([prompt, prefix], dim=1)
         with self.torch.inference_mode():
-            outputs = self.model(input_ids, output_hidden_states=True, use_cache=False)
+            outputs = self.model(
+                input_ids,
+                attention_mask=self.torch.ones_like(input_ids),
+                output_hidden_states=True,
+                use_cache=False,
+            )
         hidden = outputs.hidden_states[-1][0, -1].float().cpu().tolist()
         window = min(32, outputs.logits.shape[1])
         logits = outputs.logits[0, -window:].float()
@@ -154,8 +161,12 @@ class QwenRunner:
         with self.torch.inference_mode():
             output = self.model.generate(
                 inputs,
+                attention_mask=self.torch.ones_like(inputs),
                 max_new_tokens=self.finalizer_max_tokens,
                 do_sample=False,
+                temperature=None,
+                top_p=None,
+                top_k=None,
             )
         return self.tokenizer.decode(output[0, inputs.shape[1] :], skip_special_tokens=True)
 
