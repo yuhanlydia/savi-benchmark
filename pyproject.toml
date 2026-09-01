@@ -26,6 +26,7 @@ savi-monitor = "savi.monitor:main"
 savi-problem-features = "savi.extract_problem_features:main"
 savi-judge-handoff = "savi.judge_handoff:main"
 savi-provenance = "savi.provenance:main"
+savi-online = "savi.online_scheduler:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

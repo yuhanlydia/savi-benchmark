@@ -77,6 +77,21 @@ This calibration uses one complete suite, spent budgets 512/1024/2048 and a
 512-token continuation. Its purpose is to locate a non-degenerate budget range,
 not to support the confirmatory aliasing claim.
 
+After the predictor gate passes, a legal no-correctness-feedback online run is:
+
+```bash
+python -m savi.online_scheduler \
+  --config configs/phase0_math.yaml \
+  --critic outputs/phase0_math/critic/state-aware \
+  --suite-id math_suite_001 --shared-budget 4096 \
+  --chunk 128 --horizons 0 128 256 512 --beta 1 \
+  --output outputs/savi_online.jsonl
+```
+
+The runner executes only one 128-token chunk, invalidates only that problem's
+cached state representation, and replans across all six problems. It receives
+no online correctness feedback.
+
 ## Important compute note
 
 Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with KV cache.
