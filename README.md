@@ -4,6 +4,13 @@ Phase 0 tests whether two Qwen3-8B reasoning attempts for the same R³-Bench
 Math problem and the same spent-token budget have materially different value
 of another 256 reasoning tokens.
 
+The first calibrated diagnostics found one same-problem/same-budget cell with
+continuation probabilities `[1.00, 0.75, 0.50, 1.00]`, plus a later cell whose
+continuation gains were `[1,0,0,0]`. These are encouraging exploratory results,
+not confirmatory claims; see [the dated pilot report](docs/PILOT_RESULTS.md) for
+the budget-floor failures, natural-length calibration, noise correction, and
+limitations.
+
 ## Setup
 
 On an Ubuntu/CUDA machine with Python 3.10+, a C compiler and sufficient disk:

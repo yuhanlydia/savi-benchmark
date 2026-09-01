@@ -51,7 +51,7 @@ The first two complete cells are:
 |---:|---|---:|---:|
 | 2048 | 0.00, 0.00, 0.00, 0.00 | 0.00 | 0/4 |
 | 4096 | 1.00, 0.75, 0.50, 1.00 | 0.50 | 0/4 |
-| 6144 | 1.00, 1.00, 1.00, 1.00 | 0.00 | audited separately |
+| 6144 | 1.00, 1.00, 1.00, 1.00 | 0.00 | 1/4 crossed `</think>` |
 
 Across these two cells, the original raw range gate passes (1/2 cells), but the
 pooled-binomial Monte Carlo correction does not (`p=0.441`; with all three
