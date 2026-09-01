@@ -22,6 +22,8 @@ def summarize(config):
     provenance = json.loads(provenance_path.read_text()) if provenance_path.exists() else None
     disposition_path = root / "run_disposition.json"
     disposition = json.loads(disposition_path.read_text()) if disposition_path.exists() else None
+    timing_path = root / "execution_timing.json"
+    timing = json.loads(timing_path.read_text()) if timing_path.exists() else None
     groups = defaultdict(list)
     for row in rows:
         groups[(int(row["spent_budget"]), int(row["horizon"]))].append(row)
@@ -47,13 +49,15 @@ def summarize(config):
     if provenance and rows:
         end = max([row.get("timestamp_unix", 0) for row in telemetry] +
                   [Path(config["output"]["continuations"]).stat().st_mtime])
-        elapsed = max(0.0, end - float(provenance["created_unix"]))
+        started = float(timing["started_unix"]) if timing else float(provenance["created_unix"])
+        elapsed = max(0.0, end - started)
         records_per_hour = len(rows) / elapsed * 3600 if elapsed else None
     return {
         "experiment": config["experiment"]["name"],
         "health": build_health_report(config), "conditions": conditions,
         "elapsed_seconds_observed": elapsed, "records_per_hour": records_per_hour,
-        "gpu": gpu, "provenance": provenance, "disposition": disposition,
+        "gpu": gpu, "provenance": provenance, "execution_timing": timing,
+        "disposition": disposition,
     }
 
 
