@@ -31,6 +31,11 @@ exceed a pooled-binomial same-state null by at least 0.10 with Monte Carlo
 `p <= 0.05`. Without this correction, the null false-positive probability can
 exceed 70% for a single cell at pooled success probability 0.5.
 
+The report also includes a non-preregistered allocation diagnostic: the
+same-budget range of `Q(s,h)-Q(s,0)`. This can reveal states where both paths
+eventually succeed but only one still benefits from more compute. It is kept
+separate and never substituted for the original Gate A.
+
 Budget-floor diagnostic is fixed before three complete problems are observed:
 if at least three fully sampled problems have under 5% parseable finalizations,
 flag the Phase 0 grid as underpowered and run a separately labeled calibration

@@ -73,17 +73,23 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         for key, items in cells.items() if len(items) == expected_prefixes
     }
     cell_diagnostics = []
+    gain_ranges = []
     for (problem, spent), state_qs in sorted(cells.items()):
         if len(state_qs) != expected_prefixes:
             continue
         matching_keys = [key for key in sorted(state_mvi)
                          if key[0] == problem and key[1] == spent]
         ordered_qs = [by_state[key][analysis_horizon] for key in matching_keys]
+        gains = [by_state[key][analysis_horizon] - by_state[key][0] for key in matching_keys]
         mvis = [state_mvi[key] for key in matching_keys]
+        gain_range = max(gains) - min(gains)
+        gain_ranges.append(gain_range)
         cell_diagnostics.append({
             "problem_id": problem,
             "spent_budget": spent,
             "continuation_q_by_state": ordered_qs,
+            "continuation_gain_by_state": gains,
+            "continuation_gain_range": gain_range,
             "marginal_value_by_state": mvis,
             "continuation_q_range": ranges[(problem, spent)],
         })
@@ -143,6 +149,10 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         "same_budget_cells": len(ranges),
         "cell_diagnostics": cell_diagnostics,
         "range_ge_0_5_fraction": range_fraction,
+        "gain_range_ge_0_5_fraction_diagnostic": (
+            float(np.mean([value >= threshold for value in gain_ranges]))
+            if gain_ranges else 0.0
+        ),
         "range_null_expected_fraction": null_expected,
         "range_excess_fraction": excess_fraction,
         "range_null_pvalue": null_pvalue,

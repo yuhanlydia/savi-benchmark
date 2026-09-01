@@ -30,6 +30,7 @@ def test_gate_a_uses_continuation_probability_not_mvi_range():
     assert report["range_ge_0_5_fraction"] == 1.0
     assert len(report["cell_diagnostics"]) == 6
     assert report["cell_diagnostics"][0]["continuation_q_range"] == 1.0
+    assert "gain_range_ge_0_5_fraction_diagnostic" in report
     assert report["gate_0_raw_preregistered_pass"] is True
     assert "range_null_pvalue" in report
 
