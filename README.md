@@ -14,6 +14,9 @@ of another 256 reasoning tokens.
 - Sampling unit: 10 complete six-problem suites (60 problems), never 60
   independently sampled problems.
 - Prefix budgets: 128, 256, 512; four independent prefixes per cell.
+- Every prefix is sampled under the same 768-token trajectory contract. The
+  observed state is a truncation at 128/256/512; continuation never changes or
+  reconstructs the original prompt.
 - Continuation: zero-token finalize plus four independent 256-token
   continuations.
 - Protocol: thinking Stage 1; non-thinking trace-only Stage 2 finalizer. Only

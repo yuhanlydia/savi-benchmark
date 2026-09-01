@@ -6,6 +6,7 @@ experiment:
   prefixes_per_cell: 4
   continuation_horizons: [0, 256]
   continuations_per_state: 4
+  trajectory_budget: 768
 
 model:
   id: Qwen/Qwen3-8B

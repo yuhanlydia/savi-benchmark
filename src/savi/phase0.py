@@ -69,11 +69,13 @@ class QwenRunner:
             "top_k": int(model_cfg["top_k"]),
         }
         self.finalizer_max_tokens = int(model_cfg["finalizer_max_tokens"])
+        self.trajectory_budget = int(config["experiment"]["trajectory_budget"])
 
     def _prompt_ids(self, problem: str) -> Any:
         content = (
             "You are taking a mathematics contest. This is the reasoning stage. "
-            "A second stage "
+            f"Your total reasoning budget is limited to {self.trajectory_budget} tokens. "
+            "Keep the reasoning concise enough to fit. A second stage "
             "will receive only your stopped reasoning trace and format the answer. "
             "Make the intended final answer easy to identify.\n\nProblem:\n" + problem
         )

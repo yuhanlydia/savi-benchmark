@@ -8,6 +8,10 @@ independent autoregressive prefixes are sampled. Every continuation appends to
 the exact original prompt and token prefix; the prompt is never reconstructed
 with a different budget declaration.
 
+All paths share a 768-token total trajectory contract. This makes the model
+budget-aware without allowing the prompt itself to reveal whether a state was
+observed at 128, 256, or 512 tokens.
+
 Immediate finalization estimates `Q(s, 0)`. Four independent 256-token branches
 estimate `Q(s, 256)`. The trace-only finalizer is deterministic and excluded
 from the reasoning budget. It may format evidence already in the trace but may
