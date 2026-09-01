@@ -41,7 +41,7 @@ def main():
                 "trace_text": trace_text,
                 "trace_text_with_special_tokens": trace_text_with_special_tokens,
                 "has_candidate_answer": bool(
-                    "\\\\boxed" in trace_text or "final answer" in trace_text.casefold()
+                    r"\boxed" in trace_text or "final answer" in trace_text.casefold()
                 ),
                 "closed_thinking_stage": "</think>" in trace_text_with_special_tokens,
                 "finalizer_output": finalizer,
