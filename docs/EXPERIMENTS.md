@@ -57,6 +57,17 @@ Because SAVI consumes the reasoning state rather than a duplicated polished
 response, `</think>` and the model's chat EOS tokens are all valid natural stop
 events for this diagnostic.
 
+Fixed-length prefix grids must also be audited for states that crossed a model
+terminal token before the requested budget:
+
+```bash
+python -m savi.prefix_audit --config configs/phase0_math.yaml \
+  --output outputs/phase0_math/prefix_audit.json
+```
+
+Post-terminal prefixes are reported separately and are not evidence of
+within-reasoning state aliasing.
+
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed
 through the official R³ production equivalence judge.
