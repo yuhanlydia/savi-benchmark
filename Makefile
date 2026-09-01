@@ -1,4 +1,4 @@
-.PHONY: test plan phase0 analyze critic
+.PHONY: test plan phase0 analyze critic monitor
 
 test:
 	.venv/bin/python -m pytest -q
@@ -17,3 +17,6 @@ analyze:
 
 critic:
 	.venv/bin/python -m savi.train_critic --config configs/phase0_math.yaml
+
+monitor:
+	.venv/bin/python -m savi.monitor --config configs/phase0_math.yaml

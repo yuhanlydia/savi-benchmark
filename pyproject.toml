@@ -22,10 +22,10 @@ dependencies = [
 [project.scripts]
 savi-phase0 = "savi.phase0:main"
 savi-analyze = "savi.analysis:main"
+savi-monitor = "savi.monitor:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
