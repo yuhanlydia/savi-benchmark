@@ -1,0 +1,32 @@
+from savi.analysis import aggregate, analyze
+from savi.io import load_yaml
+
+
+def _row(problem, suite, prefix, horizon, correct):
+    return {
+        "problem_id": problem,
+        "suite_id": suite,
+        "position": int(problem[-1]),
+        "spent_budget": 128,
+        "prefix_id": prefix,
+        "horizon": horizon,
+        "correct_exact_normalized": correct,
+    }
+
+
+def test_gate_a_uses_continuation_probability_not_mvi_range():
+    rows = []
+    for problem_index in range(1, 7):
+        problem = f"p{problem_index}"
+        for prefix in range(4):
+            rows.append(_row(problem, "suite", prefix, 0, prefix % 2 == 0))
+            for repeat in range(4):
+                del repeat
+                # Every cell spans q=0 to q=1 at h=256.
+                rows.append(_row(problem, "suite", prefix, 256, prefix >= 2))
+    config = load_yaml("configs/phase0_math.yaml")
+    config["gates"]["dfr_bootstrap_draws"] = 20
+    report = analyze(config, aggregate(rows))
+    assert report["range_ge_0_5_fraction"] == 1.0
+    assert report["gate_0_pass"] is True
+
