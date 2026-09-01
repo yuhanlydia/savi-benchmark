@@ -50,3 +50,6 @@ gates:
   min_range_cell_fraction: 0.20
   min_decision_flip_rate: 0.25
   dfr_bootstrap_draws: 1000
+  dispersion_null_draws: 10000
+  max_dispersion_null_pvalue: 0.05
+  min_excess_range_fraction: 0.10

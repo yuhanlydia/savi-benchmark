@@ -28,7 +28,8 @@ def test_gate_a_uses_continuation_probability_not_mvi_range():
     config["gates"]["dfr_bootstrap_draws"] = 20
     report = analyze(config, aggregate(rows))
     assert report["range_ge_0_5_fraction"] == 1.0
-    assert report["gate_0_pass"] is True
+    assert report["gate_0_raw_preregistered_pass"] is True
+    assert "range_null_pvalue" in report
 
 
 def test_official_label_overrides_exact_pilot_label():

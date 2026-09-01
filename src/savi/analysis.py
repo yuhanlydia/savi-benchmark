@@ -51,6 +51,35 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
     threshold = float(config["gates"]["range_threshold"])
     range_fraction = float(np.mean([value >= threshold for value in ranges.values()])) if ranges else 0.0
 
+    continuation_cells: dict[tuple[str, int], list[tuple[int, int]]] = defaultdict(list)
+    for row in values:
+        if row["horizon"] == 256:
+            continuation_cells[(row["problem_id"], row["spent_budget"])].append(
+                (row["successes"], row["trials"])
+            )
+    eligible = [cell for cell in continuation_cells.values() if len(cell) == 4]
+    null_draws = int(config["gates"].get("dispersion_null_draws", 10_000))
+    null_rng = np.random.default_rng(int(config["experiment"]["seed"]) + 17)
+    null_fractions = np.zeros(null_draws, dtype=float)
+    if eligible:
+        null_hits = np.zeros((null_draws, len(eligible)), dtype=bool)
+        for cell_index, cell in enumerate(eligible):
+            successes = sum(item[0] for item in cell)
+            trials = sum(item[1] for item in cell)
+            pooled = successes / trials if trials else 0.0
+            per_state_trials = np.asarray([item[1] for item in cell])
+            simulated = null_rng.binomial(per_state_trials, pooled, size=(null_draws, 4)) / per_state_trials
+            null_hits[:, cell_index] = simulated.max(1) - simulated.min(1) >= threshold
+        null_fractions = null_hits.mean(axis=1)
+    null_expected = float(null_fractions.mean()) if eligible else 0.0
+    null_pvalue = float((1 + np.sum(null_fractions >= range_fraction)) / (null_draws + 1))
+    excess_fraction = range_fraction - null_expected
+    raw_gate = range_fraction >= config["gates"]["min_range_cell_fraction"]
+    corrected_gate = (
+        null_pvalue <= config["gates"].get("max_dispersion_null_pvalue", 0.05)
+        and excess_fraction >= config["gates"].get("min_excess_range_fraction", 0.10)
+    )
+
     rng = np.random.default_rng(int(config["experiment"]["seed"]))
     draws = int(config["gates"]["dfr_bootstrap_draws"])
     suite_spent: dict[tuple[str, int], dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
@@ -71,8 +100,13 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         "state_count": len(state_mvi),
         "same_budget_cells": len(ranges),
         "range_ge_0_5_fraction": range_fraction,
+        "range_null_expected_fraction": null_expected,
+        "range_excess_fraction": excess_fraction,
+        "range_null_pvalue": null_pvalue,
         "decision_flip_rate": dfr,
-        "gate_0_pass": range_fraction >= config["gates"]["min_range_cell_fraction"],
+        "gate_0_raw_preregistered_pass": raw_gate,
+        "gate_0_noise_adjusted_pass": corrected_gate,
+        "gate_0_pass": raw_gate and corrected_gate,
         "gate_1_pass": dfr >= config["gates"]["min_decision_flip_rate"],
         "warning": "Confirm symbolic/nontrivial equivalence with the official R3 judge before paper claims.",
     }

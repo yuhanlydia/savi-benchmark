@@ -24,6 +24,13 @@ Primary gates:
 2. State-aware and budget-only next-problem choices differ on over 25% of
    bootstrap suite states.
 
+Because four continuation trials make raw empirical ranges extremely noisy,
+Gate A is reported in two forms. The original `Range >= 0.5` fraction is never
+discarded. A confirmatory pass additionally requires its observed fraction to
+exceed a pooled-binomial same-state null by at least 0.10 with Monte Carlo
+`p <= 0.05`. Without this correction, the null false-positive probability can
+exceed 70% for a single cell at pooled success probability 0.5.
+
 Budget-floor diagnostic is fixed before three complete problems are observed:
 if at least three fully sampled problems have under 5% parseable finalizations,
 flag the Phase 0 grid as underpowered and run a separately labeled calibration
