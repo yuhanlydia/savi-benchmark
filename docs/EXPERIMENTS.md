@@ -68,6 +68,11 @@ python -m savi.prefix_audit --config configs/phase0_math.yaml \
 Post-terminal prefixes are reported separately and are not evidence of
 within-reasoning state aliasing.
 
+The exploratory `state_variance_boundary_math.yaml` condition is explicitly
+separate from the confirmatory Gate sample. It places one calibrated problem at
+2k/4k/6k spent tokens with a 2k continuation, after the natural-EOS diagnostic
+located its completion boundary near 7–8k tokens.
+
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed
 through the official R³ production equivalence judge.
