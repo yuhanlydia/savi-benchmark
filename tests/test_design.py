@@ -14,6 +14,16 @@ def test_phase0_counts():
                for suite in manifest["selected_suite_ids"])
 
 
+def test_explicit_problem_diagnostic_preserves_requested_order():
+    config = load_yaml("configs/phase0_math.yaml")
+    config["experiment"]["problem_ids"] = ["omnimath-2823", "omnimath-2741"]
+    manifest = build_manifest(config)
+    assert manifest["sampling_unit"] == "explicit_problem_diagnostic"
+    assert [row["problem_id"] for row in manifest["problems"]] == [
+        "omnimath-2823", "omnimath-2741"
+    ]
+
+
 def test_calibration_is_small_and_separate():
     config = load_yaml("configs/budget_calibration_math.yaml")
     manifest = build_manifest(config)

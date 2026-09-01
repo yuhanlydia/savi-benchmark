@@ -28,24 +28,38 @@ def build_manifest(config: dict[str, Any]) -> dict[str, Any]:
     if malformed:
         raise ValueError(f"Expected six problems per suite: {malformed}")
     suite_ids = sorted(suites)
-    rng = random.Random(int(config["experiment"]["seed"]))
-    selected = sorted(rng.sample(suite_ids, int(config["experiment"]["suite_count"])))
+    explicit_problem_ids = config["experiment"].get("problem_ids")
+    if explicit_problem_ids:
+        if len(explicit_problem_ids) != len(set(explicit_problem_ids)):
+            raise ValueError("experiment.problem_ids must be unique")
+        by_problem = {row["problem_id"]: row for row in rows}
+        missing = sorted(set(explicit_problem_ids) - set(by_problem))
+        if missing:
+            raise ValueError(f"Unknown experiment.problem_ids: {missing}")
+        selected_rows = [by_problem[problem_id] for problem_id in explicit_problem_ids]
+        selected = sorted({row["suite_id"] for row in selected_rows})
+        sampling_unit = "explicit_problem_diagnostic"
+    else:
+        rng = random.Random(int(config["experiment"]["seed"]))
+        selected = sorted(rng.sample(suite_ids, int(config["experiment"]["suite_count"])))
+        selected_rows = [row for suite_id in selected for row in
+                         sorted(suites[suite_id], key=lambda item: item["position"])]
+        sampling_unit = "complete_six_problem_suite"
     problems = []
-    for suite_id in selected:
-        for row in sorted(suites[suite_id], key=lambda item: item["position"]):
-            problems.append(
-                {
-                    "suite_id": suite_id,
-                    "position": row["position"],
-                    "problem_id": row["problem_id"],
-                    "difficulty": row.get("difficulty"),
-                    "statement_sha256": row.get("statement_sha256"),
-                }
-            )
+    for row in selected_rows:
+        problems.append(
+            {
+                "suite_id": row["suite_id"],
+                "position": row["position"],
+                "problem_id": row["problem_id"],
+                "difficulty": row.get("difficulty"),
+                "statement_sha256": row.get("statement_sha256"),
+            }
+        )
     return {
         "schema_version": 1,
         "seed": int(config["experiment"]["seed"]),
-        "sampling_unit": "complete_six_problem_suite",
+        "sampling_unit": sampling_unit,
         "dataset_path": str(data_path),
         "dataset_sha256": file_sha256(data_path),
         "selected_suite_ids": selected,
@@ -67,4 +81,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
