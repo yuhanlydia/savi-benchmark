@@ -1,4 +1,4 @@
-from savi.analysis import aggregate, analyze
+from savi.analysis import aggregate, analyze, complete_state_rows
 from savi.io import load_yaml
 
 
@@ -52,3 +52,19 @@ def test_analysis_horizon_comes_from_config():
     config["gates"]["dfr_bootstrap_draws"] = 20
     report = analyze(config, aggregate(rows))
     assert report["analysis_horizon"] == 512
+
+
+def test_partial_analysis_drops_incomplete_states():
+    config = load_yaml("configs/phase0_math.yaml")
+    complete = []
+    for continuation_id in range(4):
+        row = _row("p1", "suite", 0, 256, True)
+        row.update(state_id="complete", continuation_id=continuation_id)
+        complete.append(row)
+    immediate = _row("p1", "suite", 0, 0, False)
+    immediate.update(state_id="complete", continuation_id=0)
+    incomplete = _row("p2", "suite", 0, 0, False)
+    incomplete.update(state_id="incomplete", continuation_id=0)
+    filtered = complete_state_rows([immediate, *complete, incomplete], config)
+    assert len(filtered) == 5
+    assert {row["state_id"] for row in filtered} == {"complete"}

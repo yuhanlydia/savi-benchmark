@@ -11,6 +11,21 @@ import numpy as np
 from .io import load_yaml, read_jsonl, write_json
 
 
+def complete_state_rows(rows: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
+    required = {
+        int(horizon): (1 if int(horizon) == 0 else int(config["experiment"]["continuations_per_state"]))
+        for horizon in config["experiment"]["continuation_horizons"]
+    }
+    counts: dict[str, dict[int, int]] = defaultdict(lambda: defaultdict(int))
+    for row in rows:
+        counts[row["state_id"]][int(row["horizon"])] += 1
+    complete = {
+        state_id for state_id, horizon_counts in counts.items()
+        if all(horizon_counts[horizon] == count for horizon, count in required.items())
+    }
+    return [row for row in rows if row["state_id"] in complete]
+
+
 def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     groups: dict[tuple[str, int, int, int], list[bool]] = defaultdict(list)
     meta: dict[tuple[str, int, int, int], dict[str, Any]] = {}
@@ -133,6 +148,8 @@ def main() -> None:
             f"Refusing confirmatory analysis: {len(keys)}/{planned} jobs complete. "
             "Use --allow-partial for a clearly non-confirmatory diagnostic."
         )
+    if args.allow_partial:
+        rows = complete_state_rows(rows, config)
     values = aggregate(rows)
     report = analyze(config, values)
     write_json(config["output"]["state_values"], values)
