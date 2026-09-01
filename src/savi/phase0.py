@@ -19,6 +19,13 @@ def reasoning_prompt(problem: str, trajectory_budget: int, announce_budget: bool
         "Keep the reasoning concise enough to fit. "
         if announce_budget else ""
     )
+
+
+def natural_stop_ids(configured_eos: int | list[int], thinking_end_id: int) -> list[int]:
+    stop_ids = list(configured_eos) if isinstance(configured_eos, list) else [configured_eos]
+    if thinking_end_id not in stop_ids:
+        stop_ids.append(thinking_end_id)
+    return stop_ids
     return (
         "You are taking a mathematics contest. This is the reasoning stage. "
         + budget_text
@@ -112,19 +119,28 @@ class QwenRunner:
         return output[0, input_ids.shape[1] :].tolist()
 
     def generate_until_stop(
-        self, problem: str, max_tokens: int, seed: int, announce_budget: bool = False
+        self, problem: str, max_tokens: int, seed: int, announce_budget: bool = False,
+        stop_at_thinking_end: bool = True,
     ) -> tuple[list[int], bool]:
         self.torch.manual_seed(seed)
         input_ids = self._prompt_ids(problem, announce_budget=announce_budget)
+        configured_eos = self.model.generation_config.eos_token_id
+        if stop_at_thinking_end:
+            stop_ids = natural_stop_ids(
+                configured_eos, self.tokenizer.convert_tokens_to_ids("</think>")
+            )
+        else:
+            stop_ids = list(configured_eos) if isinstance(configured_eos, list) else [configured_eos]
         with self.torch.inference_mode():
             output = self.model.generate(
                 input_ids,
                 attention_mask=self.torch.ones_like(input_ids),
                 max_new_tokens=max_tokens,
+                eos_token_id=stop_ids,
                 **self.generation,
             )
         generated = output[0, input_ids.shape[1] :].tolist()
-        ended = bool(generated and generated[-1] == self.tokenizer.eos_token_id)
+        ended = bool(generated and generated[-1] in stop_ids)
         return generated, ended
 
     def continue_prefix(

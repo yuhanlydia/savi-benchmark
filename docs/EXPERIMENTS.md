@@ -53,6 +53,9 @@ lower bound rather than treating the cap as a measured natural reasoning length.
 The natural-EOS probe omits a numeric budget from the prompt by default so the
 cap does not anchor response length. Add `--announce-budget` only for a
 separately labeled prompt-effect control.
+Because SAVI consumes the reasoning state rather than a duplicated polished
+response, `</think>` and the model's chat EOS tokens are all valid natural stop
+events for this diagnostic.
 
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed

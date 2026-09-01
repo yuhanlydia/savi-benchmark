@@ -23,7 +23,9 @@ def build_eos_report(rows: list[dict], quantum: int = 256) -> dict:
                 "recommended_trajectory_budget": None,
                 "recommendation_status": "insufficient_data"}
     lengths = np.asarray([int(row["generated_tokens"]) for row in rows])
-    ended = np.asarray([bool(row["ended_with_eos"]) for row in rows])
+    ended = np.asarray([
+        bool(row.get("ended_with_stop_token", row.get("ended_with_eos"))) for row in rows
+    ])
     parseable = np.asarray([bool(row.get("parsed_answer_normalized")) for row in rows])
     candidates = np.asarray([bool(row.get("has_candidate_answer")) for row in rows])
     closed_thinking = np.asarray([bool(row.get("closed_thinking_stage")) for row in rows])

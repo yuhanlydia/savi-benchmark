@@ -39,7 +39,8 @@ def main():
         "problem_ids": args.problem_id,
         "samples": args.samples,
         "max_tokens": args.max_tokens,
-        "announce_budget": args.announce_budget,
+            "announce_budget": args.announce_budget,
+            "stop_at_thinking_end": True,
         "seed": config["experiment"]["seed"],
         "model_id": config["model"]["id"],
     }
@@ -67,6 +68,7 @@ def main():
                 "max_tokens": args.max_tokens, "generated_tokens": len(tokens),
                 "announced_budget_in_prompt": args.announce_budget,
                 "ended_with_eos": ended, "elapsed_seconds": time.monotonic() - started,
+                "ended_with_stop_token": ended,
                 "trace_token_ids": tokens,
                 "trace_text": trace_text,
                 "trace_text_with_special_tokens": trace_text_with_special_tokens,
