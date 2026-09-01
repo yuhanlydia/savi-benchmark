@@ -42,8 +42,25 @@ def build_eos_report(rows: list[dict], quantum: int = 256) -> dict:
     else:
         recommended = _round_up(float(lengths.max()), quantum) + quantum
         status = "lower_bound_only_all_samples_truncated"
+    by_problem = {}
+    for problem_id in sorted({row["problem_id"] for row in rows}):
+        items = [row for row in rows if row["problem_id"] == problem_id]
+        item_lengths = np.asarray([int(row["generated_tokens"]) for row in items])
+        item_ended = [bool(row.get("ended_with_stop_token", row.get("ended_with_eos")))
+                      for row in items]
+        by_problem[problem_id] = {
+            "samples": len(items),
+            "ended_with_stop_token_fraction": float(np.mean(item_ended)),
+            "parseable_fraction": float(np.mean([
+                bool(row.get("parsed_answer_normalized")) for row in items
+            ])),
+            "generated_tokens_min": int(item_lengths.min()),
+            "generated_tokens_median": float(np.median(item_lengths)),
+            "generated_tokens_max": int(item_lengths.max()),
+        }
     return {"samples": len(rows), "problems": len({row["problem_id"] for row in rows}),
             "ended_with_eos_fraction": float(ended.mean()),
+            "ended_with_stop_token_fraction": float(ended.mean()),
             "parseable_fraction": float(parseable.mean()),
             "candidate_answer_fraction": float(candidates.mean()),
             "closed_thinking_stage_fraction": float(closed_thinking.mean()),
@@ -54,6 +71,7 @@ def build_eos_report(rows: list[dict], quantum: int = 256) -> dict:
                                  "median": float(np.median(lengths)), "max": int(lengths.max())},
             "recommended_trajectory_budget": int(recommended),
             "recommendation_status": status,
+            "by_problem": by_problem,
             "warning": "The recommendation is a pilot-grid heuristic, not a population quantile."}
 
 

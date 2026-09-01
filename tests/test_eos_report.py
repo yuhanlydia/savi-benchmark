@@ -18,9 +18,11 @@ def test_recommendation_uses_natural_eos_lengths_only():
     report = build_eos_report(rows, quantum=256)
     assert report["recommended_trajectory_budget"] == 1536
     assert report["ended_with_eos_fraction"] == 0.5
+    assert report["ended_with_stop_token_fraction"] == 0.5
     assert report["candidate_answer_fraction"] == 0.5
     assert report["closed_thinking_stage_fraction"] == 0.5
     assert report["mean_unique_token_fraction_last_512"] == 0.75
+    assert report["by_problem"]["a"]["generated_tokens_median"] == 1100.0
     assert report["recommendation_status"] == "natural_eos_observed"
 
 
