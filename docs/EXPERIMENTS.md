@@ -24,6 +24,12 @@ Primary gates:
 2. State-aware and budget-only next-problem choices differ on over 25% of
    bootstrap suite states.
 
+Budget-floor diagnostic is fixed before three complete problems are observed:
+if at least three fully sampled problems have under 5% parseable finalizations,
+flag the Phase 0 grid as underpowered and run a separately labeled calibration
+condition. This diagnostic does not retroactively replace the preregistered
+Gate sample.
+
 Exact-normalized scoring is diagnostic only. Before accepting either gate,
 all parse failures and non-identical mathematical answers must be passed
 through the official R³ production equivalence judge.

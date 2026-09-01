@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from .io import load_yaml, read_jsonl
@@ -18,6 +18,17 @@ def build_health_report(config):
     jobs = json.loads(jobs_path.read_text()) if jobs_path.exists() else []
     keys = [(row["state_id"], row["horizon"], row["continuation_id"]) for row in rows]
     counts = Counter(keys)
+    planned_by_problem = Counter(row["problem_id"] for row in jobs)
+    completed_by_problem = Counter(row["problem_id"] for row in rows)
+    complete_problems = sorted(
+        problem for problem, total in planned_by_problem.items()
+        if completed_by_problem[problem] == total
+    )
+    complete_rows = [row for row in rows if row["problem_id"] in complete_problems]
+    complete_parseable = sum(bool(row.get("parsed_answer_normalized")) for row in complete_rows)
+    complete_parseable_fraction = (
+        complete_parseable / len(complete_rows) if complete_rows else None
+    )
     parseable = sum(bool(row.get("parsed_answer_normalized")) for row in rows)
     return {
         "planned_jobs": len(jobs),
@@ -35,6 +46,13 @@ def build_health_report(config):
         ),
         "hidden_dimensions": sorted({len(row["last_hidden"]) for row in prefixes}),
         "parseable_fraction": parseable / len(rows) if rows else None,
+        "complete_problem_count": len(complete_problems),
+        "complete_problem_parseable_fraction": complete_parseable_fraction,
+        "budget_floor_risk": (
+            len(complete_problems) >= 3
+            and complete_parseable_fraction is not None
+            and complete_parseable_fraction < 0.05
+        ),
         "seconds_since_last_record": (
             round(time.time() - continuation_path.stat().st_mtime, 1)
             if continuation_path.exists() else None
