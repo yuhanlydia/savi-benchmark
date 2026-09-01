@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import platform
 import subprocess
@@ -55,3 +56,21 @@ def write_once(config_path: str | Path, output_path: str | Path) -> dict:
     value = collect(config_path)
     write_json(target, value)
     return value
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="configs/phase0_math.yaml")
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--sampling-code-commit")
+    args = parser.parse_args()
+    value = collect(args.config)
+    value["sampling_code_commit"] = args.sampling_code_commit or value["code_commit"]
+    target = Path(args.output)
+    if target.exists():
+        raise FileExistsError(f"refusing to overwrite provenance: {target}")
+    write_json(target, value)
+
+
+if __name__ == "__main__":
+    main()
