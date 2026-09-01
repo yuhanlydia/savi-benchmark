@@ -1,0 +1,10 @@
+{
+  "benchmark": {
+    "commit": "e32d5930597c360c76f1af81d40daa625eab00e8",
+    "repository": "https://github.com/NineAbyss/R-3-Bench.git"
+  },
+  "model": {
+    "commit": "b968826d9c46dd6066d109eabc6255188de91218",
+    "repository": "Qwen/Qwen3-8B"
+  }
+}

@@ -1,0 +1,50 @@
+experiment:
+  name: phase0_math_qwen3_8b
+  seed: 20260901
+  suite_count: 10
+  spent_budgets: [128, 256, 512]
+  prefixes_per_cell: 4
+  continuation_horizons: [0, 256]
+  continuations_per_state: 4
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 96
+  recent_window: 32
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+  split_manifest: artifacts/phase0_math/manifest.json
+
+output:
+  root: outputs/phase0_math
+  prefixes: outputs/phase0_math/prefixes.jsonl
+  continuations: outputs/phase0_math/continuations.jsonl
+  state_values: outputs/phase0_math/state_values.jsonl
+  report: outputs/phase0_math/gates.json
+  critic_dir: outputs/phase0_math/critic
+
+training:
+  pca_components: 128
+  hidden_size: 128
+  ensemble_heads: 5
+  epochs: 200
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 20
+  train_suite_fraction: 0.7
+  validation_suite_fraction: 0.15
+  bootstrap_seed: 20260902
+
+gates:
+  range_threshold: 0.5
+  min_range_cell_fraction: 0.20
+  min_decision_flip_rate: 0.25
+  dfr_bootstrap_draws: 1000

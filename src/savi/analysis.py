@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+import argparse
+from collections import defaultdict
+from typing import Any
+
+import numpy as np
+
+from .io import load_yaml, read_jsonl, write_json
+
+
+def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[tuple[str, int, int, int], list[bool]] = defaultdict(list)
+    meta: dict[tuple[str, int, int, int], dict[str, Any]] = {}
+    for row in rows:
+        key = (row["problem_id"], row["spent_budget"], row["prefix_id"], row["horizon"])
+        groups[key].append(bool(row["correct_exact_normalized"]))
+        meta[key] = row
+    values = []
+    for key, outcomes in groups.items():
+        row = meta[key]
+        values.append({
+            "problem_id": key[0], "spent_budget": key[1], "prefix_id": key[2],
+            "horizon": key[3], "suite_id": row["suite_id"], "position": row["position"],
+            "successes": sum(outcomes), "trials": len(outcomes), "q": float(np.mean(outcomes)),
+        })
+    return values
+
+
+def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, Any]:
+    by_state: dict[tuple[str, int, int], dict[int, float]] = defaultdict(dict)
+    for row in values:
+        by_state[(row["problem_id"], row["spent_budget"], row["prefix_id"])][row["horizon"]] = row["q"]
+    state_mvi = {}
+    state_meta = {}
+    for key, horizons in by_state.items():
+        if 0 in horizons and 256 in horizons:
+            state_mvi[key] = (horizons[256] - horizons[0]) / 256.0
+            state_meta[key] = next(row for row in values if
+                                   (row["problem_id"], row["spent_budget"], row["prefix_id"]) == key)
+
+    cells: dict[tuple[str, int], list[float]] = defaultdict(list)
+    for (problem, spent, _), mvi in state_mvi.items():
+        del mvi
+        cells[(problem, spent)].append(by_state[(problem, spent, _)][256])
+    ranges = {key: max(items) - min(items) for key, items in cells.items() if items}
+    threshold = float(config["gates"]["range_threshold"])
+    range_fraction = float(np.mean([value >= threshold for value in ranges.values()])) if ranges else 0.0
+
+    rng = np.random.default_rng(int(config["experiment"]["seed"]))
+    draws = int(config["gates"]["dfr_bootstrap_draws"])
+    suite_spent: dict[tuple[str, int], dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for key, mvi in state_mvi.items():
+        meta = state_meta[key]
+        suite_spent[(meta["suite_id"], key[1])][key[0]].append(mvi)
+    flips = []
+    for _, problem_states in suite_spent.items():
+        problem_ids = sorted(problem_states)
+        budget_choice = int(np.argmax([np.mean(problem_states[p]) for p in problem_ids]))
+        for _ in range(draws):
+            realized = [rng.choice(problem_states[p]) for p in problem_ids]
+            flips.append(int(np.argmax(realized) != budget_choice))
+    dfr = float(np.mean(flips)) if flips else 0.0
+    return {
+        "schema_version": 1,
+        "scoring": "exact-normalized pilot labels",
+        "state_count": len(state_mvi),
+        "same_budget_cells": len(ranges),
+        "range_ge_0_5_fraction": range_fraction,
+        "decision_flip_rate": dfr,
+        "gate_0_pass": range_fraction >= config["gates"]["min_range_cell_fraction"],
+        "gate_1_pass": dfr >= config["gates"]["min_decision_flip_rate"],
+        "warning": "Confirm symbolic/nontrivial equivalence with the official R3 judge before paper claims.",
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="configs/phase0_math.yaml")
+    args = parser.parse_args()
+    config = load_yaml(args.config)
+    rows = read_jsonl(config["output"]["continuations"])
+    values = aggregate(rows)
+    report = analyze(config, values)
+    write_json(config["output"]["state_values"], values)
+    write_json(config["output"]["report"], report)
+    print(report)
+
+
+if __name__ == "__main__":
+    main()

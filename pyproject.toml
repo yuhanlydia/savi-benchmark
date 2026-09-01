@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "savi-benchmark"
+version = "0.1.0"
+description = "Budget-State Aliasing and SAVI experiments on R3-Bench"
+requires-python = ">=3.10"
+dependencies = [
+  "accelerate>=1.6",
+  "bitsandbytes>=0.45",
+  "huggingface_hub>=0.30",
+  "numpy>=2.0",
+  "pandas>=2.2",
+  "PyYAML>=6",
+  "scikit-learn>=1.6",
+  "torch>=2.0",
+  "transformers>=4.51,<5",
+]
+
+[project.scripts]
+savi-phase0 = "savi.phase0:main"
+savi-analyze = "savi.analysis:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
