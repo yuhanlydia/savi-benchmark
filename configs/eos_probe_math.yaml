@@ -1,0 +1,22 @@
+experiment:
+  name: eos_probe_math_qwen3_8b
+  seed: 20260905
+  trajectory_budget: 8192
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 96
+  recent_window: 32
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+
+output:
+  root: outputs/eos_probe_math

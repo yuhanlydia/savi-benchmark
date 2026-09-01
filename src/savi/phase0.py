@@ -102,6 +102,20 @@ class QwenRunner:
             )
         return output[0, input_ids.shape[1] :].tolist()
 
+    def generate_until_stop(self, problem: str, max_tokens: int, seed: int) -> tuple[list[int], bool]:
+        self.torch.manual_seed(seed)
+        input_ids = self._prompt_ids(problem)
+        with self.torch.inference_mode():
+            output = self.model.generate(
+                input_ids,
+                attention_mask=self.torch.ones_like(input_ids),
+                max_new_tokens=max_tokens,
+                **self.generation,
+            )
+        generated = output[0, input_ids.shape[1] :].tolist()
+        ended = bool(generated and generated[-1] == self.tokenizer.eos_token_id)
+        return generated, ended
+
     def continue_prefix(
         self, problem: str, spent: int, prefix_ids: list[int], horizon: int, seed: int
     ) -> list[int]:

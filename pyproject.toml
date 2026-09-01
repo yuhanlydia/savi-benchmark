@@ -28,6 +28,7 @@ savi-judge-handoff = "savi.judge_handoff:main"
 savi-provenance = "savi.provenance:main"
 savi-online = "savi.online_scheduler:main"
 savi-telemetry = "savi.telemetry:main"
+savi-eos-probe = "savi.eos_probe:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

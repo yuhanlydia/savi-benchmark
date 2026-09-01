@@ -93,6 +93,14 @@ This calibration uses one complete suite, spent budgets 512/1024/2048 and a
 512-token continuation. Its purpose is to locate a non-degenerate budget range,
 not to support the confirmatory aliasing claim.
 
+To measure natural thinking length without a forced minimum or truncation:
+
+```bash
+python -m savi.eos_probe --config configs/eos_probe_math.yaml \
+  --problem-id omnimath-3045 --problem-id omnimath-1958 \
+  --samples 2 --max-tokens 8192
+```
+
 After the predictor gate passes, a legal no-correctness-feedback online run is:
 
 ```bash
