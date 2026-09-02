@@ -179,12 +179,14 @@ class QwenRunner:
         probabilities = self.torch.softmax(logits, dim=-1)
         entropy = -(probabilities * self.torch.log(probabilities.clamp_min(1e-12))).sum(-1).mean()
         trace = self.tokenizer.decode(prefix_ids, skip_special_tokens=True)
+        trace_with_special_tokens = self.tokenizer.decode(prefix_ids, skip_special_tokens=False)
         recent = prefix_ids[-32:]
         repetition = 0.0 if not recent else 1.0 - len(set(recent)) / len(recent)
         return {
             "last_hidden": hidden,
             "recent_token_entropy": float(entropy.cpu()),
             "has_candidate_answer": bool("\\boxed" in trace or "final answer" in trace.casefold()),
+            "closed_thinking_stage": "</think>" in trace_with_special_tokens,
             "recent_repetition_rate": float(repetition),
         }
 

@@ -28,6 +28,11 @@ def build_manifest(config: dict[str, Any]) -> dict[str, Any]:
     if malformed:
         raise ValueError(f"Expected six problems per suite: {malformed}")
     suite_ids = sorted(suites)
+    excluded_suites = set(config["experiment"].get("exclude_suite_ids", []))
+    unknown_excluded = sorted(excluded_suites - set(suite_ids))
+    if unknown_excluded:
+        raise ValueError(f"Unknown experiment.exclude_suite_ids: {unknown_excluded}")
+    available_suite_ids = [suite_id for suite_id in suite_ids if suite_id not in excluded_suites]
     explicit_problem_ids = config["experiment"].get("problem_ids")
     if explicit_problem_ids:
         if len(explicit_problem_ids) != len(set(explicit_problem_ids)):
@@ -41,7 +46,10 @@ def build_manifest(config: dict[str, Any]) -> dict[str, Any]:
         sampling_unit = "explicit_problem_diagnostic"
     else:
         rng = random.Random(int(config["experiment"]["seed"]))
-        selected = sorted(rng.sample(suite_ids, int(config["experiment"]["suite_count"])))
+        requested = int(config["experiment"]["suite_count"])
+        if requested > len(available_suite_ids):
+            raise ValueError(f"Requested {requested} suites but only {len(available_suite_ids)} remain")
+        selected = sorted(rng.sample(available_suite_ids, requested))
         selected_rows = [row for suite_id in selected for row in
                          sorted(suites[suite_id], key=lambda item: item["position"])]
         sampling_unit = "complete_six_problem_suite"
@@ -63,6 +71,7 @@ def build_manifest(config: dict[str, Any]) -> dict[str, Any]:
         "dataset_path": str(data_path),
         "dataset_sha256": file_sha256(data_path),
         "selected_suite_ids": selected,
+        "excluded_suite_ids": sorted(excluded_suites),
         "problem_count": len(problems),
         "problems": problems,
     }

@@ -1,0 +1,69 @@
+experiment:
+  name: exp0b_marginal_value_aliasing_math_qwen3_8b_nf4
+  seed: 20260910
+  suite_count: 10
+  exclude_suite_ids:
+    - math_suite_002
+    - math_suite_018
+    - math_suite_019
+    - math_suite_020
+    - math_suite_021
+    - math_suite_030
+    - math_suite_033
+    - math_suite_035
+    - math_suite_039
+    - math_suite_042
+    - math_suite_044
+    - math_suite_047
+  spent_budgets: [2048, 4096, 6144]
+  prefixes_per_cell: 4
+  continuation_horizons: [0, 2048]
+  continuations_per_state: 8
+  trajectory_budget: 8192
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 128
+  recent_window: 32
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+  split_manifest: artifacts/exp0b_math/manifest.json
+
+output:
+  root: outputs/exp0b_math
+  prefixes: outputs/exp0b_math/prefixes.jsonl
+  continuations: outputs/exp0b_math/continuations.jsonl
+  state_values: outputs/exp0b_math/state_values.jsonl
+  problem_features: outputs/exp0b_math/problem_features.jsonl
+  report: outputs/exp0b_math/gates.json
+  critic_dir: outputs/exp0b_math/critic
+
+training:
+  pca_components: 64
+  hidden_size: 128
+  ensemble_heads: 5
+  epochs: 200
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 20
+  train_suite_fraction: 0.7
+  validation_suite_fraction: 0.15
+  bootstrap_seed: 20260911
+
+gates:
+  range_threshold: 0.5
+  min_range_cell_fraction: 0.20
+  min_decision_flip_rate: 0.25
+  dfr_bootstrap_draws: 1000
+  dispersion_null_draws: 10000
+  max_dispersion_null_pvalue: 0.05
+  min_excess_range_fraction: 0.10
+  min_mva_cell_fraction: 0.20

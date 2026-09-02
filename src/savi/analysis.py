@@ -26,6 +26,17 @@ def complete_state_rows(rows: list[dict[str, Any]], config: dict[str, Any]) -> l
     return [row for row in rows if row["state_id"] in complete]
 
 
+def terminal_state_ids(config: dict[str, Any]) -> set[str]:
+    prefix_path = Path(config["output"]["prefixes"])
+    if not prefix_path.exists():
+        return set()
+    terminal = set()
+    for row in read_jsonl(prefix_path):
+        if row.get("closed_thinking_stage") or row.get("has_candidate_answer"):
+            terminal.add(row["state_id"])
+    return terminal
+
+
 def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     groups: dict[tuple[str, int, int, int], list[bool]] = defaultdict(list)
     meta: dict[tuple[str, int, int, int], dict[str, Any]] = {}
@@ -46,7 +57,8 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return values
 
 
-def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, Any]:
+def analyze(config: dict[str, Any], values: list[dict[str, Any]],
+            *, analysis_subset: str = "all") -> dict[str, Any]:
     positive_horizons = [int(value) for value in config["experiment"]["continuation_horizons"]
                          if int(value) > 0]
     if len(positive_horizons) != 1:
@@ -74,6 +86,7 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
     }
     cell_diagnostics = []
     gain_ranges = []
+    corrected_variances = []
     for (problem, spent), state_qs in sorted(cells.items()):
         if len(state_qs) != expected_prefixes:
             continue
@@ -84,12 +97,22 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         mvis = [state_mvi[key] for key in matching_keys]
         gain_range = max(gains) - min(gains)
         gain_ranges.append(gain_range)
+        q_values = np.asarray(ordered_qs, dtype=float)
+        gain_values = np.asarray(gains, dtype=float)
+        observed_variance = float(np.var(gain_values))
+        trials = int(config["experiment"]["continuations_per_state"])
+        noise_variance = float(np.mean(q_values * (1.0 - q_values) / trials))
+        corrected_variance = observed_variance - noise_variance
+        corrected_variances.append(corrected_variance)
         cell_diagnostics.append({
             "problem_id": problem,
             "spent_budget": spent,
             "continuation_q_by_state": ordered_qs,
             "continuation_gain_by_state": gains,
             "continuation_gain_range": gain_range,
+            "observed_gain_variance": observed_variance,
+            "binomial_noise_variance": noise_variance,
+            "noise_corrected_gain_variance": corrected_variance,
             "marginal_value_by_state": mvis,
             "continuation_q_range": ranges[(problem, spent)],
         })
@@ -141,8 +164,31 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
             realized = [rng.choice(problem_states[p]) for p in problem_ids]
             flips.append(int(np.argmax(realized) != budget_choice))
     dfr = float(np.mean(flips)) if flips else 0.0
+    budget_best = []
+    state_best = []
+    for _, problem_states in suite_spent.items():
+        means = [float(np.mean(problem_states[p])) for p in sorted(problem_states)]
+        if len(means) < 2:
+            continue
+        budget_best.append(max(means))
+        for _ in range(draws):
+            realized = [float(rng.choice(problem_states[p])) for p in sorted(problem_states)]
+            state_best.append(max(realized))
+    oracle_headroom = float(np.mean(state_best) - np.mean(budget_best)) if budget_best else 0.0
+    problem_groups = defaultdict(list)
+    for item in cell_diagnostics:
+        problem_groups[item["problem_id"]].append(item["noise_corrected_gain_variance"])
+    problem_means = np.asarray([np.mean(items) for items in problem_groups.values()], dtype=float)
+    variance_ci = [None, None]
+    if len(problem_means):
+        boot = np.random.default_rng(int(config["experiment"]["seed"]) + 101)
+        draws_matrix = boot.choice(problem_means, size=(draws, len(problem_means)), replace=True)
+        variance_ci = [float(np.quantile(draws_matrix.mean(axis=1), 0.025)),
+                       float(np.quantile(draws_matrix.mean(axis=1), 0.975))]
+    mva_fraction = float(np.mean([value >= threshold for value in gain_ranges])) if gain_ranges else 0.0
+    mva_gate = mva_fraction >= config["gates"].get("min_mva_cell_fraction", 0.20)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "analysis_horizon": analysis_horizon,
         "scoring": "exact-normalized pilot labels",
         "state_count": len(state_mvi),
@@ -153,6 +199,15 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
             float(np.mean([value >= threshold for value in gain_ranges]))
             if gain_ranges else 0.0
         ),
+        "mva_range_ge_0_5_fraction": mva_fraction,
+        "mva_gate_pass": mva_gate,
+        "noise_corrected_gain_variance_mean": (
+            float(np.mean(corrected_variances)) if corrected_variances else None
+        ),
+        "noise_corrected_gain_variance_problem_bootstrap_ci95": variance_ci,
+        "budget_only_best_mvi_mean": float(np.mean(budget_best)) if budget_best else None,
+        "state_oracle_best_mvi_mean": float(np.mean(state_best)) if state_best else None,
+        "state_oracle_headroom_mvi": oracle_headroom,
         "range_null_expected_fraction": null_expected,
         "range_excess_fraction": excess_fraction,
         "range_null_pvalue": null_pvalue,
@@ -161,6 +216,7 @@ def analyze(config: dict[str, Any], values: list[dict[str, Any]]) -> dict[str, A
         "gate_0_noise_adjusted_pass": corrected_gate,
         "gate_0_pass": raw_gate and corrected_gate,
         "gate_1_pass": dfr >= config["gates"]["min_decision_flip_rate"],
+        "analysis_subset": analysis_subset,
         "warning": "Confirm symbolic/nontrivial equivalence with the official R3 judge before paper claims.",
     }
 
@@ -169,9 +225,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/phase0_math.yaml")
     parser.add_argument("--allow-partial", action="store_true")
+    parser.add_argument("--nonterminal-only", action="store_true")
+    parser.add_argument("--judge-labeled")
     args = parser.parse_args()
     config = load_yaml(args.config)
-    rows = read_jsonl(config["output"]["continuations"])
+    rows = read_jsonl(args.judge_labeled or config["output"]["continuations"])
     keys = {(row["state_id"], row["horizon"], row["continuation_id"]) for row in rows}
     jobs_path = Path(config["output"]["root"]) / "jobs.json"
     planned = len(json.loads(jobs_path.read_text(encoding="utf-8")))
@@ -182,8 +240,17 @@ def main() -> None:
         )
     if args.allow_partial:
         rows = complete_state_rows(rows, config)
+    subset = "all"
+    excluded_terminal = 0
+    if args.nonterminal_only:
+        terminal = terminal_state_ids(config)
+        excluded_terminal = len({row["state_id"] for row in rows} & terminal)
+        rows = [row for row in rows if row["state_id"] not in terminal]
+        subset = "nonterminal_only"
     values = aggregate(rows)
-    report = analyze(config, values)
+    report = analyze(config, values, analysis_subset=subset)
+    report["excluded_terminal_state_count"] = excluded_terminal
+    report["input_labels"] = "official_judge" if args.judge_labeled else "exact_normalized_pilot"
     write_jsonl(config["output"]["state_values"], values)
     write_json(config["output"]["report"], report)
     print(report)

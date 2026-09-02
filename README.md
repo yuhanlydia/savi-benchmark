@@ -109,6 +109,12 @@ python -m savi.eos_probe --config configs/eos_probe_math.yaml \
   --samples 2 --max-tokens 8192
 ```
 
+The next confirmatory discovery condition is `configs/exp0b_math.yaml`. It
+excludes every suite used by the development/pilot runs and samples 10 new
+complete suites at spent budgets 2048/4096/6144, with 2048-token continuations
+and eight repeats per state. Its primary label is `G=Q_h-Q_0`; no critic is
+trained until this condition and the decision-relevance analysis pass.
+
 After the predictor gate passes, a legal no-correctness-feedback online run is:
 
 ```bash

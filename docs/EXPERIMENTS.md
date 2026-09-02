@@ -73,6 +73,30 @@ python -m savi.prefix_audit --config configs/phase0_math.yaml \
 Post-terminal prefixes are reported separately and are not evidence of
 within-reasoning state aliasing.
 
+## Experiment 0B: marginal-value aliasing
+
+The confirmatory discovery condition is `configs/exp0b_math.yaml`. It excludes
+all suites used by the earlier development/pilot manifests and samples ten new
+complete suites (60 problems). Each `(problem, spent-budget)` cell has four
+prefix states at spent budgets 2048/4096/6144. Each state is finalized once and
+then receives eight independent 2048-token continuations. The primary label is
+the marginal gain `G = Q_h - Q_0`, not `Q_h` alone.
+
+The preregistered primary diagnostic is Marginal-Value Aliasing:
+`MVA(x,b) = max_j G(s_j,h) - min_j G(s_j,h)`. The report retains both all-state
+MVA and a conservative nonterminal-only analysis, where prefixes containing a
+thinking terminator or explicit candidate answer are excluded. It also reports
+per-cell observed gain variance minus the expected binomial continuation noise,
+with a problem-bootstrap interval. Run the latter after sampling with:
+
+```bash
+python -m savi.analysis --config configs/exp0b_math.yaml
+python -m savi.analysis --config configs/exp0b_math.yaml --nonterminal-only
+```
+
+No critic or scheduler result is valid before this discovery analysis, the
+official judge audit, and the decision-relevance/State-Oracle analysis pass.
+
 Same-seed replication conditions can be checked at token level with
 `python -m savi.repro_check --left-config ... --right-config ...`. The report
 compares only shared state/job keys and separately reports prefix-token,
