@@ -97,6 +97,18 @@ python -m savi.analysis --config configs/exp0b_math.yaml --nonterminal-only
 No critic or scheduler result is valid before this discovery analysis, the
 official judge audit, and the decision-relevance/State-Oracle analysis pass.
 
+After a complete EXP-2 values file exists, compute the one-step decision
+diagnostic with:
+
+```bash
+python -m savi.oracle_analysis --config configs/exp0b_math.yaml \
+  --output outputs/exp0b_math/oracle_report.json
+```
+
+This reports DFR and state-oracle headroom over budget-only choices. It is
+explicitly not a full shared-budget scheduler score or a claim of beating the
+R³ response-curve oracle.
+
 Same-seed replication conditions can be checked at token level with
 `python -m savi.repro_check --left-config ... --right-config ...`. The report
 compares only shared state/job keys and separately reports prefix-token,
