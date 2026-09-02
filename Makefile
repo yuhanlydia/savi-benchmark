@@ -1,4 +1,4 @@
-.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze analyze critic monitor
+.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze exp0b-postprocess analyze critic monitor
 
 test:
 	.venv/bin/python -m pytest -q
@@ -20,6 +20,9 @@ exp0b-10h:
 
 exp0b-analyze:
 	.venv/bin/python -m savi.analysis --config configs/exp0b_math.yaml
+
+exp0b-postprocess:
+	bash scripts/postprocess_exp0b.sh
 
 analyze:
 	.venv/bin/python -m savi.analysis --config configs/phase0_math.yaml
