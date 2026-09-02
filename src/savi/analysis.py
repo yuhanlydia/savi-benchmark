@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from .io import load_yaml, read_jsonl, write_json
+from .io import load_yaml, read_jsonl, write_json, write_jsonl
 
 
 def complete_state_rows(rows: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -184,7 +184,7 @@ def main() -> None:
         rows = complete_state_rows(rows, config)
     values = aggregate(rows)
     report = analyze(config, values)
-    write_json(config["output"]["state_values"], values)
+    write_jsonl(config["output"]["state_values"], values)
     write_json(config["output"]["report"], report)
     print(report)
 

@@ -37,6 +37,14 @@ def append_jsonl(path: str | Path, rows: Iterable[dict[str, Any]]) -> None:
             handle.flush()
 
 
+def write_jsonl(path: str | Path, rows: Iterable[dict[str, Any]]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
 def write_json(path: str | Path, value: Any) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -49,4 +57,3 @@ def write_json(path: str | Path, value: Any) -> None:
 def stable_seed(base_seed: int, *parts: object) -> int:
     text = "|".join([str(base_seed), *(str(part) for part in parts)])
     return int.from_bytes(hashlib.sha256(text.encode()).digest()[:4], "big")
-
