@@ -227,6 +227,7 @@ def main() -> None:
     parser.add_argument("--allow-partial", action="store_true")
     parser.add_argument("--nonterminal-only", action="store_true")
     parser.add_argument("--judge-labeled")
+    parser.add_argument("--output-prefix", help="prefix for derived values/report files")
     args = parser.parse_args()
     config = load_yaml(args.config)
     rows = read_jsonl(args.judge_labeled or config["output"]["continuations"])
@@ -251,8 +252,18 @@ def main() -> None:
     report = analyze(config, values, analysis_subset=subset)
     report["excluded_terminal_state_count"] = excluded_terminal
     report["input_labels"] = "official_judge" if args.judge_labeled else "exact_normalized_pilot"
-    write_jsonl(config["output"]["state_values"], values)
-    write_json(config["output"]["report"], report)
+    if args.output_prefix:
+        prefix = Path(config["output"]["root"]) / args.output_prefix
+        values_path = prefix.with_suffix(".state_values.jsonl")
+        report_path = prefix.with_suffix(".gates.json")
+    elif args.nonterminal_only:
+        values_path = Path(config["output"]["root"]) / "state_values_nonterminal.jsonl"
+        report_path = Path(config["output"]["root"]) / "gates_nonterminal.json"
+    else:
+        values_path = Path(config["output"]["state_values"])
+        report_path = Path(config["output"]["report"])
+    write_jsonl(values_path, values)
+    write_json(report_path, report)
     print(report)
 
 
