@@ -1,4 +1,4 @@
-.PHONY: test plan phase0 analyze critic monitor
+.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze analyze critic monitor
 
 test:
 	.venv/bin/python -m pytest -q
@@ -11,6 +11,15 @@ phase0:
 
 phase0-10h:
 	.venv/bin/python -m savi.phase0 --config configs/phase0_math.yaml --execute --max-hours 10
+
+exp0b:
+	.venv/bin/python -m savi.phase0 --config configs/exp0b_math.yaml --execute
+
+exp0b-10h:
+	.venv/bin/python -m savi.phase0 --config configs/exp0b_math.yaml --execute --max-hours 10
+
+exp0b-analyze:
+	.venv/bin/python -m savi.analysis --config configs/exp0b_math.yaml
 
 analyze:
 	.venv/bin/python -m savi.analysis --config configs/phase0_math.yaml
