@@ -199,7 +199,7 @@ class QwenRunner:
             )
         return {"problem_hidden": outputs.hidden_states[-1][0, -1].float().cpu().tolist()}
 
-    def finalize(self, trace_ids: list[int]) -> str:
+    def finalize(self, trace_ids: list[int], max_tokens: int | None = None) -> str:
         trace = self.tokenizer.decode(trace_ids, skip_special_tokens=True)
         content = (
             "You are a strict answer finalizer. Do not solve from scratch. Use only "
@@ -218,7 +218,7 @@ class QwenRunner:
             output = self.model.generate(
                 inputs,
                 attention_mask=self.torch.ones_like(inputs),
-                max_new_tokens=self.finalizer_max_tokens,
+                max_new_tokens=max_tokens or self.finalizer_max_tokens,
                 do_sample=False,
                 temperature=None,
                 top_p=None,
