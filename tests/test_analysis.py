@@ -1,5 +1,6 @@
-from savi.analysis import aggregate, analyze, complete_state_rows
+from savi.analysis import aggregate, analyze, complete_state_rows, terminal_state_ids
 from savi.io import load_yaml
+from savi.io import write_jsonl
 
 
 def _row(problem, suite, prefix, horizon, correct):
@@ -83,3 +84,40 @@ def test_aliasing_range_requires_complete_prefix_cell():
     report = analyze(config, values)
     assert report["state_count"] == 1
     assert report["same_budget_cells"] == 0
+
+
+def test_mva_and_noise_corrected_variance_are_reported():
+    config = load_yaml("configs/phase0_math.yaml")
+    config["experiment"]["continuation_horizons"] = [0, 256]
+    config["experiment"]["prefixes_per_cell"] = 4
+    config["experiment"]["continuations_per_state"] = 4
+    config["gates"]["dispersion_null_draws"] = 20
+    config["gates"]["dfr_bootstrap_draws"] = 20
+    rows = []
+    for problem_index in range(1, 7):
+        problem = f"p{problem_index}"
+        for prefix in range(4):
+            rows.append(_row(problem, "suite", prefix, 0, False) | {
+                "state_id": f"{problem}-b128-m{prefix}", "continuation_id": 0,
+            })
+            for repeat in range(4):
+                del repeat
+                rows.append(_row(problem, "suite", prefix, 256, prefix >= 2) | {
+                    "state_id": f"{problem}-b128-m{prefix}", "continuation_id": 0,
+                })
+    report = analyze(config, aggregate(rows))
+    assert report["mva_range_ge_0_5_fraction"] == 1.0
+    assert report["noise_corrected_gain_variance_mean"] > 0
+    assert report["state_oracle_headroom_mvi"] >= 0
+
+
+def test_terminal_state_ids_are_read_from_prefix_metadata(tmp_path):
+    config = load_yaml("configs/phase0_math.yaml")
+    config["output"]["prefixes"] = str(tmp_path / "prefixes.jsonl")
+    write_jsonl(config["output"]["prefixes"], [
+        {"state_id": "closed", "closed_thinking_stage": True},
+        {"state_id": "candidate", "has_candidate_answer": True},
+        {"state_id": "live", "closed_thinking_stage": False,
+         "has_candidate_answer": False},
+    ])
+    assert terminal_state_ids(config) == {"closed", "candidate"}
