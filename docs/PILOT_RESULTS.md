@@ -77,9 +77,14 @@ At spent 4096, the K=8 estimates became `[1.00, 0.875, 0.625, 1.00]`. The range
 shrunk from 0.50 to 0.375, so the raw Gate A example did **not** replicate at
 the preregistered threshold. This is evidence that K=4 exaggerated that range.
 
-At spent 6144, three states completed before the ten-hour deadline. Their
-immediate-to-continuation results were `0→8/8`, `1→8/8`, and `1→8/8`, preserving
-the allocation-relevant gain contrast of 1 versus 0 at higher K. The fourth
-state was not sampled, so this cell is deliberately excluded from complete-cell
-gate statistics. The replication stopped at 63/72 atomic jobs with no duplicate
-rows or invalid token lengths.
+At spent 6144, all four states completed after the continuation was resumed.
+Their immediate-to-continuation results were `0→8/8`, `1→8/8`, `1→8/8`, and
+`1→8/8`, preserving the allocation-relevant gain contrast of 1 versus 0 at
+higher K. The completed replication has 72/72 jobs, no duplicate rows, and no
+invalid token lengths.
+
+The original run contains 69/72 parseable finalizer outputs under the original
+96-token finalizer cap. A trace-only repair pass with a 256-token finalizer
+recovered two answers (`22`) and left one intrinsically incomplete trace
+unparseable, yielding 71/72 parseable outputs. The repaired file is kept as a
+separate sensitivity artifact; all gate numbers above use the original rows.
