@@ -65,3 +65,21 @@ at least 0.5. This diagnostic was added after observing the distinction and is
 not substituted for preregistered Gate A. A same-seed, higher-K replication is
 used to reduce continuation sampling noise. Additional problems and the
 official judge remain required.
+
+## Higher-K replication
+
+A same-seed replication increased continuation trials from 4 to 8 for the
+4096/6144-token cells. Token-level audit found exact agreement for all 7 shared
+prefixes and all 35 shared jobs (prefix tokens, continuation tokens, and scored
+outcomes), so added trials are clean extensions rather than regenerated drift.
+
+At spent 4096, the K=8 estimates became `[1.00, 0.875, 0.625, 1.00]`. The range
+shrunk from 0.50 to 0.375, so the raw Gate A example did **not** replicate at
+the preregistered threshold. This is evidence that K=4 exaggerated that range.
+
+At spent 6144, three states completed before the ten-hour deadline. Their
+immediate-to-continuation results were `0→8/8`, `1→8/8`, and `1→8/8`, preserving
+the allocation-relevant gain contrast of 1 versus 0 at higher K. The fourth
+state was not sampled, so this cell is deliberately excluded from complete-cell
+gate statistics. The replication stopped at 63/72 atomic jobs with no duplicate
+rows or invalid token lengths.
