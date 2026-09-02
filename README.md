@@ -1,8 +1,9 @@
 # Budget–State Aliasing / SAVI
 
-Phase 0 tests whether two Qwen3-8B reasoning attempts for the same R³-Bench
-Math problem and the same spent-token budget have materially different value
-of another 256 reasoning tokens.
+Experiment 0B tests whether two Qwen3-8B reasoning attempts for the same
+R³-Bench Math problem and the same spent-token budget have materially different
+marginal value of another 2048 reasoning tokens. The primary label is
+`G = Q(s,+2048) - Q(s,0)`, not continuation success alone.
 
 The first calibrated diagnostics found one same-problem/same-budget cell with
 continuation probabilities `[1.00, 0.75, 0.50, 1.00]`, plus a later cell whose
@@ -35,20 +36,18 @@ condition needs roughly 8GB runtime VRAM; downloaded BF16 shards occupy about
   `resources.lock.json`.
 - Sampling unit: 10 complete six-problem suites (60 problems), never 60
   independently sampled problems.
-- Prefix budgets: 128, 256, 512; four independent prefixes per cell.
-- Every prefix is sampled under the same 768-token trajectory contract. The
-  observed state is a truncation at 128/256/512; continuation never changes or
-  reconstructs the original prompt.
-- Continuation: zero-token finalize plus four independent 256-token
-  continuations.
+- Confirmatory prefix budgets: 2048, 4096, 6144; four independent prefixes per
+  cell, with an 8192-token trajectory contract.
+- Continuation: one immediate finalize plus eight independent 2048-token
+  continuations per state. Continuations append to the exact stopped prefix.
 - Protocol: thinking Stage 1; non-thinking trace-only Stage 2 finalizer. Only
   Stage 1 tokens count, matching R³'s two-stage accounting.
 - Pilot labels use exact normalized answers. Any paper-facing result must rerun
   nontrivial answer equivalence through the official R³ production judge.
 
-This design creates 720 prefix states and 3,600 evaluation jobs: 720 immediate
-finalizations plus 2,880 stochastic continuations. Prefixes are generated once
-and reused across their continuation branches.
+This confirmatory design creates 720 prefix states and 6,480 evaluation jobs:
+720 immediate finalizations plus 5,760 stochastic continuations. Prefixes are
+generated once and reused across their continuation branches.
 
 ## Commands
 
@@ -119,10 +118,10 @@ After the predictor gate passes, a legal no-correctness-feedback online run is:
 
 ```bash
 python -m savi.online_scheduler \
-  --config configs/phase0_math.yaml \
+  --config configs/exp0b_math.yaml \
   --critic outputs/phase0_math/critic/state-aware \
   --suite-id math_suite_001 --shared-budget 4096 \
-  --chunk 128 --horizons 0 128 256 512 --beta 1 \
+  --chunk 512 --horizons 0 512 1024 2048 --beta 1 \
   --output outputs/savi_online.jsonl
 ```
 
