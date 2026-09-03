@@ -140,3 +140,29 @@ Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with KV cache.
 The default runner uses 4-bit NF4 with BF16 compute. Quantization is part of the
 model condition and must be reported; do not compare it silently with published
 BF16 response curves.
+
+## Experiment 0B runtime note (observed)
+
+The first long run of `configs/exp0b_math.yaml` was intentionally left
+append-only and was stopped after producing 729/6,480 rows (11.25%, six of 60
+problems complete).  At the observed rate this full design would take roughly
+9--10 days on an RTX A4000, rather than the ten-hour development window.  The
+partial files remain valid checkpoints and can be resumed; they are not a
+confirmatory result and must not be pooled with the excluded pilot data.
+
+The main bottleneck is implementation-level, not a deadlock: jobs are executed
+serially.  The plan contains 720 prefix states and 5,760 stochastic continuation
+jobs.  For every new state the runner performs a 2,048/4,096/6,144-token prefix
+generation plus a full hidden-state feature pass; each continuation then
+generates 2,048 tokens and runs the finalizer.  This is thousands of separate
+`model.generate` calls with batch size one.  During the run the A4000 showed
+about 43--48% utilization, 14.5 GiB allocated, and 91 C, consistent with a
+small-batch/serial throughput limit.
+
+Before resuming a production-scale collection, benchmark a resumable batched
+runner (group equal horizons, pad inputs, and preserve per-job seeds/output
+keys) on a held-out development suite.  Keep the current sequential runner as
+the reproducibility fallback.  Any speedup must be validated against its
+sampling contract and must preserve the exact `(state, horizon, repeat)` keys;
+changing `K`, budgets, or the suite manifest changes the experiment rather than
+optimizing it.
