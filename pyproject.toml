@@ -21,7 +21,9 @@ dependencies = [
 
 [project.scripts]
 savi-phase0 = "savi.phase0:main"
+savi-batched-phase0 = "savi.batched_phase0:main"
 savi-analyze = "savi.analysis:main"
+savi-gap-decision = "savi.gate_decision:main"
 savi-monitor = "savi.monitor:main"
 savi-problem-features = "savi.extract_problem_features:main"
 savi-judge-handoff = "savi.judge_handoff:main"

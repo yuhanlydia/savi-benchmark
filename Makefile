@@ -1,4 +1,4 @@
-.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze exp0b-postprocess analyze critic monitor
+.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze exp0b-postprocess batch-smoke exp0c-16 exp0c-24 exp0c-analyze-16 exp0c-gates-16 analyze critic monitor
 
 test:
 	.venv/bin/python -m pytest -q
@@ -23,6 +23,22 @@ exp0b-analyze:
 
 exp0b-postprocess:
 	bash scripts/postprocess_exp0b.sh
+
+batch-smoke:
+	.venv/bin/python -m savi.batched_phase0 --config configs/batch_smoke_math.yaml --execute
+
+exp0c-16:
+	.venv/bin/python -m savi.batched_phase0 --config configs/exp0c_math_batched_16gb.yaml --execute
+
+exp0c-24:
+	.venv/bin/python -m savi.batched_phase0 --config configs/exp0c_math_batched_24gb.yaml --execute
+
+exp0c-analyze-16:
+	.venv/bin/python -m savi.analysis --config configs/exp0c_math_batched_16gb.yaml
+	.venv/bin/python -m savi.analysis --config configs/exp0c_math_batched_16gb.yaml --nonterminal-only
+
+exp0c-gates-16:
+	.venv/bin/python -m savi.gate_decision --config configs/exp0c_math_batched_16gb.yaml --report outputs/exp0c_math_batched_16gb/gates.json
 
 analyze:
 	.venv/bin/python -m savi.analysis --config configs/phase0_math.yaml

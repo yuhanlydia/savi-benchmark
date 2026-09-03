@@ -1,0 +1,76 @@
+experiment:
+  name: exp0c_midbudget_mva_math_qwen3_8b_nf4_batched16
+  seed: 20260930
+  suite_count: 5
+  exclude_suite_ids:
+    - math_suite_001
+    - math_suite_002
+    - math_suite_004
+    - math_suite_006
+    - math_suite_009
+    - math_suite_012
+    - math_suite_018
+    - math_suite_019
+    - math_suite_020
+    - math_suite_021
+    - math_suite_022
+    - math_suite_028
+    - math_suite_029
+    - math_suite_030
+    - math_suite_033
+    - math_suite_034
+    - math_suite_035
+    - math_suite_039
+    - math_suite_042
+    - math_suite_044
+    - math_suite_047
+    - math_suite_049
+  spent_budgets: [4096]
+  prefixes_per_cell: 4
+  continuation_horizons: [0, 2048]
+  continuations_per_state: 8
+  trajectory_budget: 8192
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 128
+  recent_window: 32
+
+runtime:
+  sampling_contract: grouped_rng_v1
+  collect_state_features: false
+  max_batch_context_tokens: 14000
+  max_prefix_batch: 2
+  max_continuation_batch: 2
+  max_finalizer_batch: 2
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+  split_manifest: artifacts/exp0c_math_batched_16gb/manifest.json
+
+output:
+  root: outputs/exp0c_math_batched_16gb
+  prefixes: outputs/exp0c_math_batched_16gb/prefixes.jsonl
+  continuations: outputs/exp0c_math_batched_16gb/continuations.jsonl
+  state_values: outputs/exp0c_math_batched_16gb/state_values.jsonl
+  problem_features: outputs/exp0c_math_batched_16gb/problem_features.jsonl
+  report: outputs/exp0c_math_batched_16gb/gates.json
+  critic_dir: outputs/exp0c_math_batched_16gb/critic
+
+gates:
+  primary_aliasing_gate: marginal_value
+  range_threshold: 0.5
+  min_range_cell_fraction: 0.20
+  min_decision_flip_rate: 0.25
+  dfr_bootstrap_draws: 1000
+  dispersion_null_draws: 10000
+  max_dispersion_null_pvalue: 0.05
+  min_excess_range_fraction: 0.10
+  min_mva_cell_fraction: 0.20
