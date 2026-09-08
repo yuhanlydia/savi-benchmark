@@ -1,149 +1,119 @@
 # Experimental protocol
 
-## Phase 0: Budget–State Aliasing
+## Research objective
 
-The confirmatory sampling unit is a complete R³ Math suite. Ten suites are
-selected once by the manifest seed. For each problem and spent budget, four
-independent autoregressive prefixes are sampled. Every continuation appends to
-the exact original prompt and token prefix; the prompt is never reconstructed
-with a different budget declaration.
+R³-Bench asks a model to solve six problems under one shared inference budget. The project tests whether problem identity plus spent budget is sufficient to decide where the next unit of compute should go. The working hypothesis is narrower: the realized reasoning state is path-dependent, so the same problem at the same spent budget can have a different marginal value of additional reasoning.
 
-The confirmatory paths share an 8192-token total trajectory contract. This makes the model
-budget-aware without allowing the prompt itself to reveal whether a state was
-observed at 128, 256, or 512 tokens.
+The allocation target is `G(s,h) = Q(s,h) - Q(s,0)`.
 
-Immediate finalization estimates `Q(s, 0)`. Eight independent 2048-token branches
-estimate `Q(s, 2048)`. The trace-only finalizer is deterministic and excluded
-from the reasoning budget. It may format evidence already in the trace but may
-not solve from scratch.
+## Phase 0 — Experiment 0C gap gate
 
-Primary gates:
+Legacy Phase-0/0B diagnostics are preserved for provenance, but the active confirmatory gate is `docs/EXP0C_BATCHED.md`.
 
-1. At least 20% of `(problem, spent-budget)` cells have
-   `max_j Q(s_j,256)-min_j Q(s_j,256) >= 0.5`.
-2. State-aware and budget-only next-problem choices differ on over 25% of
-   bootstrap suite states.
+Current condition:
 
-Because four continuation trials make raw empirical ranges extremely noisy,
-Gate A is reported in two forms. The original `Range >= 0.5` fraction is never
-discarded. A confirmatory pass additionally requires its observed fraction to
-exceed a pooled-binomial same-state null by at least 0.10 with Monte Carlo
-`p <= 0.05`. Without this correction, the null false-positive probability can
-exceed 70% for a single cell at pooled success probability 0.5.
+- R³-Bench Math;
+- Qwen3-8B NF4 with BF16 compute for 16GB/24GB development;
+- five new complete six-problem suites (30 problems);
+- spent budget 4096;
+- four independent prefixes per problem;
+- one immediate finalization plus eight +2048-token continuations per state;
+- 120 states / 1,080 evaluation jobs.
 
-The report also includes a non-preregistered allocation diagnostic: the
-same-budget range of `Q(s,h)-Q(s,0)`. This can reveal states where both paths
-eventually succeed but only one still benefits from more compute. It is kept
-separate and never substituted for the original Gate A.
-
-Budget-floor diagnostic is fixed before three complete problems are observed:
-if at least three fully sampled problems have under 5% parseable finalizations,
-flag the Phase 0 grid as underpowered and run a separately labeled calibration
-condition. This diagnostic does not retroactively replace the preregistered
-Gate sample.
-
-### Natural-EOS diagnostic
-
-Fixed-length conditions that trigger the budget-floor check are followed by a
-separately labeled natural-EOS probe. Summarize completed rows with:
+Run:
 
 ```bash
-python -m savi.eos_report \
-  --input outputs/eos_probe_math/results.jsonl \
-  --output outputs/eos_probe_math/report.json
+make batch-smoke       # 16GB
+make exp0c-16
+
+make batch-smoke-24    # 24GB
+make exp0c-24
 ```
 
-If every sample hits the cap, the report labels the suggested next grid as a
-lower bound rather than treating the cap as a measured natural reasoning length.
-The natural-EOS probe omits a numeric budget from the prompt by default so the
-cap does not anchor response length. Add `--announce-budget` only for a
-separately labeled prompt-effect control.
-Because SAVI consumes the reasoning state rather than a duplicated polished
-response, `</think>` and the model's chat EOS tokens are all valid natural stop
-events for this diagnostic.
+Do not pool hardware conditions.
 
-Fixed-length prefix grids must also be audited for states that crossed a model
-terminal token before the requested budget:
+GO only if:
+
+1. at least 20% of complete `(problem,4096)` cells have marginal-gain range `>=0.5`;
+2. the problem-bootstrap 95% CI lower bound of noise-corrected marginal-gain variance is above zero;
+3. Decision Flip Rate is above 25%;
+4. the signal remains meaningful in the nonterminal-only subset.
+
+If this gate fails, stop before critic training.
+
+## Phase 1 — frozen continuation-value critic
+
+Only after Exp0C passes, train a frozen value model `Q_phi(s,h)` on external math problems with R³ items and near-duplicates removed. R³ remains evaluation-only for the final paper comparison.
+
+Required predictors:
+
+- budget-only: problem representation + spent budget + horizon;
+- surface-progress: budget-only + runtime-visible progress features;
+- state-aware: reasoning-state representation + spent budget + horizon.
+
+Report calibration, binomial NLL, Brier, AUROC and pairwise ranking of `G(s,h)`. Scheduler experiments are blocked unless state awareness improves marginal-value ranking by at least 10 percentage points over the matched budget-only model.
+
+## Phase 1B — online value-belief calibration
+
+The main method does not update language-model weights and receives no test-time correctness feedback. It treats the frozen critic prediction as a noisy observation of a latent marginal-compute value that changes as reasoning evolves.
+
+For problem `i`, horizon `h`:
+
+`g^t_{i,h} ~ N(m^t_{i,h}, P^t_{i,h})`.
+
+After one reasoning chunk, allow value drift with process variance `q`. The new critic estimate `z = Q_phi(s^{t+1},h)-Q_phi(s^{t+1},0)` is incorporated with a Kalman-style update. The belief is updated only when that problem's realized state changes.
+
+Tune process noise, measurement-noise floor and the information-value coefficient only on held-out external validation trajectories, never on final R³ test suites.
+
+## Phase 2 — Online-SAVI
+
+At each decision step, predict affordable horizons and compute a conservative exploitation term
+
+`Exploit_i(h) = (m_{i,h} - beta sqrt(P_{i,h})) / h`.
+
+A probe also has information value because the new reasoning state can reveal whether a currently uncertain problem deserves future compute. The implementation adds a myopic Gaussian value-of-information bonus:
+
+`Index_i(h) = Exploit_i(h) + lambda * VoI_i(h)`.
+
+Select the highest-index problem, execute one 512-token chunk, update only that problem's state/value belief, and replan across all six problems. No correctness label or verifier reward is exposed during the episode.
+
+The scheduler never scores a lookahead larger than the remaining shared budget.
+
+Required variants:
+
+- `Direct-SAVI`: `--legacy-direct-savi`;
+- `Online-SAVI-noVoI`: `--voi-lambda 0`;
+- `Online-SAVI`: validation-selected `--voi-lambda > 0`;
+- frozen: `--frozen-index`;
+- state-shuffle;
+- budget-only critic;
+- oracle-state headroom.
+
+Example after the critic gate passes:
 
 ```bash
-python -m savi.prefix_audit --config configs/phase0_math.yaml \
-  --output outputs/phase0_math/prefix_audit.json
+python -m savi.online_scheduler \
+  --config configs/exp0c_math_batched_16gb.yaml \
+  --critic outputs/value_model/state-aware \
+  --suite-id math_suite_001 --shared-budget 4096 \
+  --chunk 512 --horizons 0 512 1024 2048 \
+  --beta 1 --voi-lambda 0.5 \
+  --process-std 0.10 --measurement-noise-floor 0.05 \
+  --output outputs/online_savi_math.jsonl
 ```
 
-Post-terminal prefixes are reported separately and are not evidence of
-within-reasoning state aliasing.
+The numeric scheduler values above are development defaults only.
 
-## Experiment 0B: marginal-value aliasing
+## Phase 3 — R³ benchmark comparison
 
-The confirmatory discovery condition is `configs/exp0b_math.yaml`. It excludes
-all suites used by the earlier development/pilot manifests and samples ten new
-complete suites (60 problems). Each `(problem, spent-budget)` cell has four
-prefix states at spent budgets 2048/4096/6144. Each state is finalized once and
-then receives eight independent 2048-token continuations. The primary label is
-the marginal gain `G = Q_h - Q_0`, not `Q_h` alone.
+Primary score: average correct answers per six-problem suite under the same shared compute budget.
 
-The preregistered primary diagnostic is Marginal-Value Aliasing:
-`MVA(x,b) = max_j G(s_j,h) - min_j G(s_j,h)`. The report retains both all-state
-MVA and a conservative nonterminal-only analysis, where prefixes containing a
-thinking terminator or explicit candidate answer are excluded. It also reports
-per-cell observed gain variance minus the expected binomial continuation noise,
-with a problem-bootstrap interval. Run the latter after sampling with:
+Compare against Native Contest, Equal Allocation, R³ Coverage-first, Coverage+Verification, matched budget/difficulty allocation, Direct-SAVI, Online-SAVI-noVoI, Online-SAVI, and the response-curve oracle as a non-deployable reference.
 
-```bash
-python -m savi.analysis --config configs/exp0b_math.yaml
-python -m savi.analysis --config configs/exp0b_math.yaml --nonterminal-only
-```
+Run Math first. Expand to Code, Abstract Reasoning and additional models only if Online-SAVI beats the best deployable baseline with paired confidence intervals.
 
-No critic or scheduler result is valid before this discovery analysis, the
-official judge audit, and the decision-relevance/State-Oracle analysis pass.
+## Stop rules
 
-After a complete EXP-2 values file exists, compute the one-step decision
-diagnostic with:
+Stop if nonterminal Exp0C aliasing disappears, DFR is <=25%, the state-aware critic fails the +10pp ranking gate, or Online-SAVI fails to beat Direct-SAVI / the best deployable R³ baseline under matched compute.
 
-```bash
-python -m savi.oracle_analysis --config configs/exp0b_math.yaml \
-  --output outputs/exp0b_math/oracle_report.json
-```
-
-This reports DFR and state-oracle headroom over budget-only choices. It is
-explicitly not a full shared-budget scheduler score or a claim of beating the
-R³ response-curve oracle.
-
-Same-seed replication conditions can be checked at token level with
-`python -m savi.repro_check --left-config ... --right-config ...`. The report
-compares only shared state/job keys and separately reports prefix-token,
-continuation-token, and scored-outcome agreement.
-
-The exploratory `state_variance_boundary_math.yaml` condition is explicitly
-separate from the confirmatory Gate sample. It places one calibrated problem at
-2k/4k/6k spent tokens with a 2k continuation, after the natural-EOS diagnostic
-located its completion boundary near 7–8k tokens.
-
-Exact-normalized scoring is diagnostic only. Before accepting either gate,
-all parse failures and non-identical mathematical answers must be passed
-through the official R³ production equivalence judge.
-
-## Phase 1: value model
-
-Only after Phase 0 passes, extract the frozen final-token hidden state and
-runtime-visible scalars. Fit PCA on training suites only. Train five bootstrap
-MLP heads with binomial NLL. Splits are by suite, so no problem or trajectory
-crosses train/validation/test boundaries.
-
-Report calibration, binomial NLL, Brier score, AUROC, and pairwise ranking of
-`Q(s,h)-Q(s,0)` against the matched budget-only model. Scheduler evaluation is
-blocked unless state awareness improves pairwise ranking by 10 percentage
-points.
-
-## Phase 2: scheduler
-
-At every 512-token execution chunk, predict horizons 512/1024/2048, compute the
-LCB marginal-value index, execute only 128 tokens on the selected problem, and
-replan. Primary legal R³ evaluation receives no correctness oracle. Required
-ablations are state shuffle, frozen initial index, beta=0 SAVI, and oracle-state
-headroom.
-
-Main reporting uses average correct answers per six-problem suite, paired
-repeat-level bootstrap confidence intervals, Contest–Oracle Gap and Gap Ratio.
-Pressure, domain, model, seed, quantization and judge versions are always
-reported as part of the condition.
+The sequence remains: phenomenon first, predictability second, dynamic allocation third.

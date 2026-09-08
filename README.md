@@ -1,20 +1,27 @@
-# Budget–State Aliasing / SAVI
+# Budget–State Aliasing / Online-SAVI
 
-Experiment 0B tests whether two Qwen3-8B reasoning attempts for the same
-R³-Bench Math problem and the same spent-token budget have materially different
-marginal value of another 2048 reasoning tokens. The primary label is
-`G = Q(s,+2048) - Q(s,0)`, not continuation success alone.
+This repository studies **shared-budget reasoning** on R³-Bench. The central question is not merely how difficult a problem is, but whether the *current realized reasoning state* still makes additional inference compute valuable.
 
-The first calibrated diagnostics found one same-problem/same-budget cell with
-continuation probabilities `[1.00, 0.75, 0.50, 1.00]`, plus a later cell whose
-continuation gains were `[1,0,0,0]`. These are encouraging exploratory results,
-not confirmatory claims; see [the dated pilot report](docs/PILOT_RESULTS.md) for
-the budget-floor failures, natural-length calibration, noise correction, and
-limitations.
+The allocation target is `G(s,h) = Q(s,+h) - Q(s,0)`.
+
+Two attempts on the same problem can consume the same number of tokens yet have very different `G`: one may be close to a breakthrough, while another may be stuck or already complete. We call this **marginal-value / budget-state aliasing**.
+
+The proposed method is **Online-SAVI** (State-Aware Value-of-Inference). It keeps the LM and value critic frozen, but learns a test-time belief over each problem's changing marginal compute value. After every small reasoning chunk, it updates the selected problem's value belief and reallocates compute across the six problems. A myopic value-of-information term can favor a short probe when learning whether a problem is worth further investment is itself useful.
+
+This is test-time online belief learning / adaptive inference control, **not** weight-updating test-time training. No correctness signal or verifier reward is available during the R³ episode.
+
+## Current scientific stage
+
+The method is blocked behind a phenomenon gate. Earlier pilot evidence for raw continuation-probability aliasing weakened when continuation repeats increased from K=4 to K=8, but a replicated allocation-relevant marginal-gain contrast remained. Therefore the active confirmatory experiment is **Experiment 0C**, not the old serial Exp0B.
+
+See:
+
+- `docs/EXP0C_BATCHED.md` — current 16GB/24GB gap gate;
+- `docs/EXPERIMENTS.md` — full staged experiment plan;
+- `docs/ONLINE_VALUE_LEARNING.md` — Online-SAVI mathematics and ablations;
+- `docs/PILOT_RESULTS.md` — exploratory results and limitations.
 
 ## Setup
-
-On an Ubuntu/CUDA machine with Python 3.10+, a C compiler and sufficient disk:
 
 ```bash
 git clone --recursive https://github.com/yuhanlydia/savi-benchmark.git
@@ -22,147 +29,89 @@ cd savi-benchmark
 bash scripts/bootstrap.sh
 ```
 
-The bootstrap resolves both the R³ submodule commit and the exact Hugging Face
-revision from `resources.lock.json`, then runs the test suite. The default NF4
-condition needs roughly 8GB runtime VRAM; downloaded BF16 shards occupy about
-16GB on disk.
+The benchmark and model revisions are pinned in `resources.lock.json`.
 
-## Reproducibility contract
+## Current next experiment: Exp0C
 
-- Benchmark: official `NineAbyss/R-3-Bench`, pinned in
-  `third_party/R-3-Bench` at commit `e32d5930`.
-- Model: official `Qwen/Qwen3-8B`, local snapshot under `models/Qwen3-8B`.
-  The downloaded Hub revision is `b968826d`; both revisions are recorded in
-  `resources.lock.json`.
-- Sampling unit: 10 complete six-problem suites (60 problems), never 60
-  independently sampled problems.
-- Confirmatory prefix budgets: 2048, 4096, 6144; four independent prefixes per
-  cell, with an 8192-token trajectory contract.
-- Continuation: one immediate finalize plus eight independent 2048-token
-  continuations per state. Continuations append to the exact stopped prefix.
-- Protocol: thinking Stage 1; non-thinking trace-only Stage 2 finalizer. Only
-  Stage 1 tokens count, matching R³'s two-stage accounting.
-- Pilot labels use exact normalized answers. Any paper-facing result must rerun
-  nontrivial answer equivalence through the official R³ production judge.
-
-This confirmatory design creates 720 prefix states and 6,480 evaluation jobs:
-720 immediate finalizations plus 5,760 stochastic continuations. Prefixes are
-generated once and reused across their continuation branches.
-
-## Commands
+First run the hardware smoke:
 
 ```bash
-source .venv/bin/activate
-python -m savi.manifest --config configs/phase0_math.yaml
-python -m savi.phase0 --config configs/phase0_math.yaml        # plan only
-python -m savi.phase0 --config configs/phase0_math.yaml --execute
-python -m savi.analysis --config configs/phase0_math.yaml
-python -m savi.train_critic --config configs/phase0_math.yaml  # only after gates pass
-python -m savi.extract_problem_features --config configs/phase0_math.yaml
-python -m savi.train_critic --config configs/phase0_math.yaml --representation budget-only
-python -m savi.monitor --config configs/phase0_math.yaml
-python -m savi.summarize --config configs/phase0_math.yaml --output outputs/phase0_math/summary.json
-python -m savi.judge_handoff --config configs/phase0_math.yaml export --output outputs/judge_queue.jsonl
+make batch-smoke       # 16GB GPUs
+make batch-smoke-24    # 24GB GPUs
 ```
 
-The runner is append-only and resumes completed `(state, horizon, repeat)`
-tuples. Do not report Gate A or DFR from partial output.
-The analyzer enforces this by default; `--allow-partial` is diagnostic only.
-
-For a bounded ten-hour collection window:
+Then run exactly one hardware condition:
 
 ```bash
-make phase0-10h
+make exp0c-16
+# or
+make exp0c-24
 ```
 
-The deadline is checked between atomic jobs. It never truncates a JSONL record;
-rerunning the same command resumes from the next incomplete tuple.
-Each executed run writes immutable code, config, dependency, CUDA, GPU, model and
-benchmark provenance plus a byte-for-byte `config.snapshot.yaml` before loading
-the model. Plan-only commands never create execution provenance.
+Do not pool the 16GB and 24GB sampling conditions.
 
-## Preregistered gates
-
-- Gate A: at least 20% of `(problem, spent budget)` cells have continuation
-  success range at least 0.5 across four prefixes.
-- Gate C/decision relevance: suite-level Decision Flip Rate above 25%.
-- Predictor and scheduler gates begin only after the Phase 0 labels pass an
-  official-equivalence scoring audit.
-
-If the preregistered floor-risk diagnostic triggers, run the separately labeled
-calibration grid; never merge it into Phase 0:
+After completion:
 
 ```bash
-python -m savi.phase0 --config configs/budget_calibration_math.yaml --execute
+make exp0c-analyze-16
+make exp0c-gates-16
 ```
 
-This calibration uses one complete suite, spent budgets 512/1024/2048 and a
-512-token continuation. Its purpose is to locate a non-degenerate budget range,
-not to support the confirmatory aliasing claim.
+(or the corresponding `-24` targets).
 
-To measure natural thinking length without a forced minimum or truncation:
+Experiment 0C uses five new complete R³ Math suites (30 problems), one 4096-token spent-budget condition, four independent prefixes per problem, one immediate finalization and eight +2048-token continuations per state. No critic or scheduler result is valid unless the gap gate passes.
 
-```bash
-python -m savi.eos_probe --config configs/eos_probe_math.yaml \
-  --problem-id omnimath-3045 --problem-id omnimath-1958 \
-  --samples 2 --max-tokens 8192
-```
+## Gap GO criteria
 
-The next confirmatory discovery condition is `configs/exp0b_math.yaml`. It
-excludes every suite used by the development/pilot runs and samples 10 new
-complete suites at spent budgets 2048/4096/6144, with 2048-token continuations
-and eight repeats per state. Its primary label is `G=Q_h-Q_0`; no critic is
-trained until this condition and the decision-relevance analysis pass.
+Continue only if:
 
-After the predictor gate passes, a legal no-correctness-feedback online run is:
+- at least 20% of complete `(problem,4096)` cells have marginal-gain range `>=0.5`;
+- the problem-bootstrap 95% CI lower bound for noise-corrected marginal-gain variance is above zero;
+- Decision Flip Rate is above 25%;
+- the signal remains meaningful in the nonterminal-only subset.
+
+If this fails, stop the direction before value-model training.
+
+## Online-SAVI after the gap passes
+
+The frozen critic measures the current state:
+
+`z_{i,h} = Q_phi(s_i,h) - Q_phi(s_i,0)`.
+
+Online-SAVI maintains a Kalman-style belief over each problem/horizon's latent marginal gain. The scheduling score combines a conservative exploit term with an optional myopic value-of-information bonus:
+
+`Index_i(h) = (m_{i,h} - beta sqrt(P_{i,h})) / h + lambda * VoI_i(h)`.
+
+One 512-token chunk is executed, the selected problem state changes, its belief is refreshed, and all six problems are reconsidered.
+
+Example after a state-aware critic has passed its held-out gate:
 
 ```bash
 python -m savi.online_scheduler \
-  --config configs/exp0b_math.yaml \
-  --critic outputs/phase0_math/critic/state-aware \
-  --suite-id math_suite_001 --shared-budget 4096 \
-  --chunk 512 --horizons 0 512 1024 2048 --beta 1 \
-  --output outputs/savi_online.jsonl
+  --config configs/exp0c_math_batched_16gb.yaml \
+  --critic outputs/value_model/state-aware \
+  --suite-id math_suite_001 \
+  --shared-budget 4096 \
+  --chunk 512 \
+  --horizons 0 512 1024 2048 \
+  --beta 1 \
+  --voi-lambda 0.5 \
+  --process-std 0.10 \
+  --measurement-noise-floor 0.05 \
+  --output outputs/online_savi_math.jsonl
 ```
 
-The runner executes only one 128-token chunk, invalidates only that problem's
-cached state representation, and replans across all six problems. It receives
-no online correctness feedback.
+The numeric scheduler hyperparameters above are development defaults only. Final values must be selected on external validation trajectories, never on final R³ test suites.
 
-Use `--frozen-index` for the preregistered non-replanning ablation. The
-`savi.ablations.state_shuffle` transform performs a deterministic derangement
-within each `(problem, spent-budget)` cell while preserving labels and all
-budget/problem metadata.
+Required ablations:
 
-## Important compute note
+- `--legacy-direct-savi`: direct current-state prediction, no online belief filter;
+- `--voi-lambda 0`: online belief update without information value;
+- `--frozen-index`: no dynamic re-planning;
+- matched state-shuffle, budget-only and oracle-state controls.
 
-Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with KV cache.
-The default runner uses 4-bit NF4 with BF16 compute. Quantization is part of the
-model condition and must be reported; do not compare it silently with published
-BF16 response curves.
+Primary final metric remains R³ average correct answers per six-problem suite at matched shared compute.
 
-## Experiment 0B runtime note (observed)
+## Compute note
 
-The first long run of `configs/exp0b_math.yaml` was intentionally left
-append-only and was stopped after producing 729/6,480 rows (11.25%, six of 60
-problems complete).  At the observed rate this full design would take roughly
-9--10 days on an RTX A4000, rather than the ten-hour development window.  The
-partial files remain valid checkpoints and can be resumed; they are not a
-confirmatory result and must not be pooled with the excluded pilot data.
-
-The main bottleneck is implementation-level, not a deadlock: jobs are executed
-serially.  The plan contains 720 prefix states and 5,760 stochastic continuation
-jobs.  For every new state the runner performs a 2,048/4,096/6,144-token prefix
-generation plus a full hidden-state feature pass; each continuation then
-generates 2,048 tokens and runs the finalizer.  This is thousands of separate
-`model.generate` calls with batch size one.  During the run the A4000 showed
-about 43--48% utilization, 14.5 GiB allocated, and 91 C, consistent with a
-small-batch/serial throughput limit.
-
-Before resuming a production-scale collection, benchmark a resumable batched
-runner (group equal horizons, pad inputs, and preserve per-job seeds/output
-keys) on a held-out development suite.  Keep the current sequential runner as
-the reproducibility fallback.  Any speedup must be validated against its
-sampling contract and must preserve the exact `(state, horizon, repeat)` keys;
-changing `K`, budgets, or the suite manifest changes the experiment rather than
-optimizing it.
+Qwen3-8B BF16 does not safely fit an RTX A4000 16GB together with the required KV cache. The development profile therefore uses NF4 with BF16 compute. Quantization is part of the model condition and must be reported. The 16GB and 24GB batched profiles are explicit, reproducible sampling conditions rather than silent auto-tuning.
