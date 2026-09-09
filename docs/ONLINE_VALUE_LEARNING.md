@@ -6,6 +6,11 @@ Online-SAVI is a test-time **belief-learning and control** method, not test-time
 
 The method observes newly generated reasoning states but receives no ground-truth correctness, verifier reward or answer label until the R³ episode is over.
 
+The first end-to-end matched comparison is recorded in
+`docs/EXPLORATORY_SHARED_BUDGET.md`. It is exploratory because the Exp0C
+phenomenon gate failed and the critic calibration reuses the fixed comparison
+suites; it must not be cited as evidence that Online-SAVI beats its baselines.
+
 ## 1. State-conditioned marginal value
 
 For a realized reasoning state `s` and lookahead horizon `h`, the frozen critic predicts

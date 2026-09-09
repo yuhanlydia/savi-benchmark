@@ -1,0 +1,16 @@
+output:
+  prefixes: outputs/exploratory_shared_budget_24gb/prefixes_with_features.jsonl
+  state_values: outputs/exp0c_math_batched_24gb/state_values.jsonl
+  critic_dir: outputs/exploratory_shared_budget_24gb/critic
+
+training:
+  pca_components: 128
+  hidden_size: 128
+  ensemble_heads: 5
+  epochs: 200
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 20
+  train_suite_fraction: 0.6
+  validation_suite_fraction: 0.2
+  bootstrap_seed: 20260909

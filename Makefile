@@ -1,4 +1,4 @@
-.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze exp0b-postprocess batch-smoke batch-smoke-24 exp0c-16 exp0c-24 exp0c-analyze-16 exp0c-analyze-24 exp0c-gates-16 exp0c-gates-24 analyze critic monitor
+.PHONY: test plan phase0 phase0-10h exp0b exp0b-10h exp0b-analyze exp0b-postprocess batch-smoke batch-smoke-24 exp0c-16 exp0c-24 exp0c-analyze-16 exp0c-analyze-24 exp0c-gates-16 exp0c-gates-24 exploratory-backfill exploratory-critic exploratory-baselines exploratory-savi exploratory-analyze analyze critic monitor
 
 test:
 	.venv/bin/python -m pytest -q
@@ -49,6 +49,21 @@ exp0c-gates-16:
 
 exp0c-gates-24:
 	.venv/bin/python -m savi.gate_decision --config configs/exp0c_math_batched_24gb.yaml --report outputs/exp0c_math_batched_24gb/gates.json
+
+exploratory-backfill:
+	PYTHONPATH=src .venv/bin/python scripts/backfill_exp0c_state_features.py --config configs/exploratory_shared_budget_24gb.yaml --input outputs/exp0c_math_batched_24gb/prefixes.jsonl --output outputs/exploratory_shared_budget_24gb/prefixes_with_features.jsonl --resume
+
+exploratory-critic:
+	PYTHONPATH=src .venv/bin/python -m savi.train_critic --config configs/exploratory_critic_24gb.yaml --representation state-aware
+
+exploratory-baselines:
+	PYTHONPATH=src .venv/bin/python scripts/run_shared_budget_baselines.py --config configs/exploratory_shared_budget_24gb.yaml --methods equal native --resume
+
+exploratory-savi:
+	PYTHONPATH=src .venv/bin/python scripts/run_shared_budget_savi.py --config configs/exploratory_shared_budget_24gb.yaml --methods direct_savi online_savi_no_voi online_savi frozen_index --resume
+
+exploratory-analyze:
+	PYTHONPATH=src .venv/bin/python scripts/analyze_shared_budget_comparison.py --config configs/exploratory_shared_budget_24gb.yaml
 
 analyze:
 	.venv/bin/python -m savi.analysis --config configs/phase0_math.yaml

@@ -112,6 +112,22 @@ def test_feasible_horizons_never_scores_unaffordable_compute():
     assert feasible_horizons([0, 512, 1024, 2048], 256) == [0, 256]
 
 
+def test_online_choice_ignores_stale_unaffordable_horizons():
+    short = update_online_belief(
+        None, _belief_state("short", 0.2, 0.5, horizon=512),
+        process_std=0.05, measurement_noise_floor=0.01,
+    )
+    stale = update_online_belief(
+        None, _belief_state("stale", 0.2, 0.9, horizon=2048),
+        process_std=0.05, measurement_noise_floor=0.01,
+    )
+    selected = choose_problem_online(
+        [short, stale], beta=0.0, voi_lambda=0.0, allowed_horizons=[512]
+    )
+    assert selected.problem_id == "short"
+    assert selected.horizon == 512
+
+
 def test_critic_rows_preserve_state_and_change_horizon():
     features = {"last_hidden": [1, 2], "recent_token_entropy": 1.2,
                 "has_candidate_answer": False, "recent_repetition_rate": .1}

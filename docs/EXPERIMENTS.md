@@ -41,6 +41,15 @@ GO only if:
 
 If this gate fails, stop before critic training.
 
+### Exploratory post-gate comparison
+
+The formal stop rule above is unchanged. For engineering diagnosis only, the
+completed five-suite Exp0C artifacts may be used for an explicitly exploratory
+same-suite comparison of Equal, Native, Direct-SAVI and Online-SAVI. This does
+not convert the failed gate into a pass. The critic's use of these same suites
+and its extrapolation below `spent_budget=4096` must be reported with the
+results. See `docs/EXPLORATORY_SHARED_BUDGET.md`.
+
 ## Phase 1 — frozen continuation-value critic
 
 Only after Exp0C passes, train a frozen value model `Q_phi(s,h)` on external math problems with R³ items and near-duplicates removed. R³ remains evaluation-only for the final paper comparison.

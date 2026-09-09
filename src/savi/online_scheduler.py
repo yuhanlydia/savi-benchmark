@@ -118,7 +118,8 @@ def run_suite(
         belief_update_count = None
         if online_belief:
             choice = choose_problem_online(
-                online_beliefs, beta=beta, voi_lambda=voi_lambda
+                online_beliefs, beta=beta, voi_lambda=voi_lambda,
+                allowed_horizons=decision_horizons[1:],
             )
             selected = choice.problem_id
             lookahead = choice.horizon

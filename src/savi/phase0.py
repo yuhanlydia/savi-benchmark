@@ -35,6 +35,11 @@ def natural_stop_ids(configured_eos: int | list[int], thinking_end_id: int) -> l
     return stop_ids
 
 
+def prefix_tensor(torch_module: Any, prefix_ids: list[int], device: Any) -> Any:
+    """Create model-compatible token IDs, including for an empty prefix."""
+    return torch_module.tensor([prefix_ids], dtype=torch_module.long, device=device)
+
+
 def build_jobs(config: dict[str, Any], manifest: dict[str, Any]) -> list[dict[str, Any]]:
     exp = config["experiment"]
     jobs = []
@@ -94,6 +99,7 @@ class QwenRunner:
         }
         self.finalizer_max_tokens = int(model_cfg["finalizer_max_tokens"])
         self.trajectory_budget = int(config["experiment"]["trajectory_budget"])
+        self.native_thinking = bool(model_cfg.get("native_thinking", True))
 
     def _prompt_ids(self, problem: str, announce_budget: bool = True) -> Any:
         content = reasoning_prompt(problem, self.trajectory_budget, announce_budget)
@@ -117,6 +123,40 @@ class QwenRunner:
                 **self.generation,
             )
         return output[0, input_ids.shape[1] :].tolist()
+
+    def generate_native(self, prompt: str, budget: int, seed: int) -> str:
+        """Generate one official-style contest response under a shared cap."""
+        self.torch.manual_seed(seed)
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are an experienced educator in the field of MATHEMATICS. "
+                    "Solve as many problems as you can within the response budget. "
+                    + ("Your reasoning process is included in this budget."
+                       if self.native_thinking else
+                       "Keep the answer sections concise and complete.")
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ]
+        text = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=self.native_thinking,
+        )
+        inputs = self.tokenizer(text, return_tensors="pt").input_ids.to(self.model.device)
+        with self.torch.inference_mode():
+            output = self.model.generate(
+                inputs,
+                attention_mask=self.torch.ones_like(inputs),
+                max_new_tokens=budget,
+                **self.generation,
+            )
+        generated = output[0, inputs.shape[1] :].tolist()
+        self.last_native_token_count = len(generated)
+        return self.tokenizer.decode(generated, skip_special_tokens=True)
 
     def generate_until_stop(
         self, problem: str, max_tokens: int, seed: int, announce_budget: bool = False,
@@ -150,7 +190,7 @@ class QwenRunner:
             return []
         self.torch.manual_seed(seed)
         prompt = self._prompt_ids(problem)
-        prefix = self.torch.tensor([prefix_ids], device=self.model.device)
+        prefix = prefix_tensor(self.torch, prefix_ids, self.model.device)
         input_ids = self.torch.cat([prompt, prefix], dim=1)
         with self.torch.inference_mode():
             output = self.model.generate(
@@ -164,7 +204,7 @@ class QwenRunner:
 
     def state_features(self, problem: str, prefix_ids: list[int]) -> dict[str, Any]:
         prompt = self._prompt_ids(problem)
-        prefix = self.torch.tensor([prefix_ids], device=self.model.device)
+        prefix = prefix_tensor(self.torch, prefix_ids, self.model.device)
         input_ids = self.torch.cat([prompt, prefix], dim=1)
         with self.torch.inference_mode():
             outputs = self.model(

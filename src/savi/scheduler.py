@@ -179,17 +179,19 @@ def choose_problem_online(
     *,
     beta: float = 0.0,
     voi_lambda: float = 0.0,
+    allowed_horizons: Iterable[int] | None = None,
 ) -> OnlineChoice:
     """Choose the next problem using exploitation plus myopic information value."""
     if beta < 0:
         raise ValueError("beta must be non-negative")
     if voi_lambda < 0:
         raise ValueError("voi_lambda must be non-negative")
+    allowed = None if allowed_horizons is None else {int(h) for h in allowed_horizons if int(h) > 0}
     beliefs = list(beliefs)
     candidates = []
     for belief in beliefs:
         for item in belief.horizons:
-            if item.horizon <= 0:
+            if item.horizon <= 0 or (allowed is not None and item.horizon not in allowed):
                 continue
             mean_rate = item.mean_gain / item.horizon
             variance_rate = item.variance / (item.horizon * item.horizon)

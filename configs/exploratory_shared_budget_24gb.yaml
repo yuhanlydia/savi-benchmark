@@ -1,0 +1,60 @@
+experiment:
+  name: exploratory_shared_budget_math_24gb
+  seed: 20260909
+  trajectory_budget: 8192
+
+model:
+  id: Qwen/Qwen3-8B
+  path: models/Qwen3-8B
+  quantization: nf4
+  dtype: bfloat16
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  finalizer_max_tokens: 96
+  recent_window: 32
+  native_max_tokens: 4096
+  native_thinking: false
+
+data:
+  path: third_party/R-3-Bench/datasets/math.jsonl
+  split_manifest: artifacts/exp0c_math_batched_24gb/manifest.json
+
+comparison:
+  label: exploratory_same_suite_shared_budget
+  shared_budget: 4096
+  chunk: 512
+  horizons: [0, 512, 1024, 2048]
+  suite_ids:
+    - math_suite_014
+    - math_suite_024
+    - math_suite_026
+    - math_suite_038
+    - math_suite_043
+  methods:
+    - equal
+    - native
+    - direct_savi
+    - online_savi_no_voi
+    - online_savi
+    - frozen_index
+  beta: 1.0
+  voi_lambda: 0.25
+  process_std: 0.10
+  measurement_noise_floor: 0.05
+
+calibration:
+  prefixes: outputs/exploratory_shared_budget_24gb/prefixes_with_features.jsonl
+  state_values: outputs/exp0c_math_batched_24gb/state_values.jsonl
+  critic_dir: outputs/exploratory_shared_budget_24gb/critic
+
+output:
+  root: outputs/exploratory_shared_budget_24gb
+  equal: outputs/exploratory_shared_budget_24gb/equal.jsonl
+  native: outputs/exploratory_shared_budget_24gb/native.jsonl
+  direct_savi: outputs/exploratory_shared_budget_24gb/direct_savi.jsonl
+  online_savi_no_voi: outputs/exploratory_shared_budget_24gb/online_savi_no_voi.jsonl
+  online_savi: outputs/exploratory_shared_budget_24gb/online_savi.jsonl
+  frozen_index: outputs/exploratory_shared_budget_24gb/frozen_index.jsonl
+  summary: outputs/exploratory_shared_budget_24gb/comparison_summary.json

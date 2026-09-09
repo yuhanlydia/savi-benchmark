@@ -20,6 +20,7 @@ See:
 - `docs/EXPERIMENTS.md` — full staged experiment plan;
 - `docs/ONLINE_VALUE_LEARNING.md` — Online-SAVI mathematics and ablations;
 - `docs/PILOT_RESULTS.md` — exploratory results and limitations.
+- `docs/EXPLORATORY_SHARED_BUDGET.md` — matched Equal/Native/SAVI comparison and limitations.
 
 ## Setup
 
@@ -71,6 +72,12 @@ Continue only if:
 - the signal remains meaningful in the nonterminal-only subset.
 
 If this fails, stop the direction before value-model training.
+
+An exploratory shared-budget comparison was run after the 24GB Exp0C result
+using the same five suites. It is explicitly not a gate override: the critic
+reuses those suites and Exp0C remains formally failed. See
+`docs/EXPLORATORY_SHARED_BUDGET.md` and
+`outputs/exploratory_shared_budget_24gb/comparison_summary.json`.
 
 ## Online-SAVI after the gap passes
 
