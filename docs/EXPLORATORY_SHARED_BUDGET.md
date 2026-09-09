@@ -3,9 +3,9 @@
 ## Status
 
 This is an **exploratory** matched comparison, not a confirmatory gate. The
-formal Exp0C phenomenon gate remains unchanged and failed. The run was stopped
-after a code/protocol audit found issues requiring further debugging, so there
-is currently no valid completed Online-SAVI comparison.
+formal Exp0C phenomenon gate remains unchanged and failed. The code/protocol
+audit was fixed before the final rerun, and the complete comparison below is
+still exploratory rather than confirmatory.
 
 Machine-readable output:
 
@@ -37,12 +37,18 @@ state-aware scheduler; no-VoI and frozen-index are ablations.
 | Native concise local variant | 7 / 30 | 1.40 / 6 | 23.33% |
 | Direct-SAVI | 0 / 30 | 0.00 / 6 | 0.00% |
 | Online-SAVI-noVoI | 0 / 30 | 0.00 / 6 | 0.00% |
-| Online-SAVI | incomplete: 1 / 24 | not reported | not reported |
-| frozen-index | not run | not reported | not reported |
+| Online-SAVI | 1 / 30 | 0.20 / 6 | 3.33% |
+| frozen-index | 0 / 30 | 0.00 / 6 | 0.00% |
 
-The previous `comparison_summary.json` was generated before the audit fixes and
-must not be used; it has been archived with the pre-validation outputs. No
-paired superiority interval is reported for the stopped/incomplete run.
+The previous pre-audit outputs are archived under
+`outputs/exploratory_shared_budget_24gb/legacy_pre_validation/`. The current
+`comparison_summary.json` is the post-fix complete summary.
+
+Online-SAVI versus Direct-SAVI has a paired suite mean difference of `+0.20`
+correct answers per suite, with five-suite bootstrap 95% CI `[0.00, 0.60]`.
+Online-SAVI versus Native concise local variant is `-1.20`, with CI
+`[-2.20, -0.20]`. These intervals are descriptive only; five suites and one
+successful Online-SAVI answer are far too small for a claim of superiority.
 
 ## Scientific limitations
 
@@ -58,7 +64,6 @@ paired superiority interval is reported for the stopped/incomplete run.
 4. Exact-normalized parsing can miss mathematically equivalent forms and is
    not a substitute for the official R-3-Bench judge.
 
-The current result supports only that parts of the end-to-end protocol can run.
-It does not validate the method, the Native baseline, or the research
-hypothesis. The next run must first resolve the scheduler/protocol audit and
-then regenerate all methods together.
+The current result supports only that the audited end-to-end protocol can run
+and that this tiny sample does not show Online-SAVI beating Equal or Native.
+It does not validate the method or the research hypothesis.

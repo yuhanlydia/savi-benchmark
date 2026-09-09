@@ -1,0 +1,1268 @@
+{
+  "chunk": 512,
+  "critic_calibration": {
+    "heads": [
+      {
+        "epochs": 21,
+        "head": 0,
+        "validation_binomial_nll": 4854.6142578125
+      },
+      {
+        "epochs": 21,
+        "head": 1,
+        "validation_binomial_nll": 2963.081298828125
+      },
+      {
+        "epochs": 22,
+        "head": 2,
+        "validation_binomial_nll": 1651.4228515625
+      },
+      {
+        "epochs": 22,
+        "head": 3,
+        "validation_binomial_nll": 4816.48779296875
+      },
+      {
+        "epochs": 21,
+        "head": 4,
+        "validation_binomial_nll": 5087.52001953125
+      }
+    ],
+    "hidden_size": 128,
+    "input_dim": 133,
+    "representation": "state-aware",
+    "test_suites": [
+      "math_suite_026"
+    ],
+    "train_suites": [
+      "math_suite_014",
+      "math_suite_024",
+      "math_suite_038"
+    ],
+    "validation_suites": [
+      "math_suite_043"
+    ]
+  },
+  "exp0c_gate_unchanged": {
+    "analysis_horizon": 2048,
+    "analysis_subset": "all",
+    "budget_only_best_mvi_mean": 5.4931640625e-05,
+    "cell_diagnostics": [
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-1113",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-1126",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-1573",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-1928",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2144",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2496",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2617",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2643",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2704",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-2780",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-285",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3031",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3088",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.005859375,
+        "continuation_gain_by_state": [
+          0.25,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.25,
+        "continuation_q_by_state": [
+          0.25,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.25,
+        "marginal_value_by_state": [
+          0.0001220703125,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.005859375,
+        "observed_gain_variance": 0.01171875,
+        "problem_id": "omnimath-3153",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3295",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3508",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-353",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3532",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.01953125,
+        "continuation_gain_by_state": [
+          0.0,
+          0.25,
+          0.25,
+          0.5
+        ],
+        "continuation_gain_range": 0.5,
+        "continuation_q_by_state": [
+          0.0,
+          0.25,
+          0.25,
+          0.5
+        ],
+        "continuation_q_range": 0.5,
+        "marginal_value_by_state": [
+          0.0,
+          0.0001220703125,
+          0.0001220703125,
+          0.000244140625
+        ],
+        "noise_corrected_gain_variance": 0.01171875,
+        "observed_gain_variance": 0.03125,
+        "problem_id": "omnimath-3537",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0146484375,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.375,
+          0.625
+        ],
+        "continuation_gain_range": 0.625,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.375,
+          0.625
+        ],
+        "continuation_q_range": 0.625,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.00018310546875,
+          0.00030517578125
+        ],
+        "noise_corrected_gain_variance": 0.0556640625,
+        "observed_gain_variance": 0.0703125,
+        "problem_id": "omnimath-3612",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3648",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3892",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3931",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-3971",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-401",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-4109",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-4239",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-4420",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-473",
+        "spent_budget": 4096
+      },
+      {
+        "binomial_noise_variance": 0.0,
+        "continuation_gain_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_gain_range": 0.0,
+        "continuation_q_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "continuation_q_range": 0.0,
+        "marginal_value_by_state": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "noise_corrected_gain_variance": 0.0,
+        "observed_gain_variance": 0.0,
+        "problem_id": "omnimath-96",
+        "spent_budget": 4096
+      }
+    ],
+    "decision_flip_rate": 0.1506,
+    "excluded_terminal_state_count": 0,
+    "gain_range_ge_0_5_fraction_diagnostic": 0.06666666666666667,
+    "gate_0_noise_adjusted_pass": false,
+    "gate_0_pass": false,
+    "gate_0_raw_preregistered_pass": false,
+    "gate_1_pass": false,
+    "input_labels": "exact_normalized_pilot",
+    "mva_gate_pass": false,
+    "mva_range_ge_0_5_fraction": 0.06666666666666667,
+    "noise_corrected_gain_variance_mean": 0.00244140625,
+    "noise_corrected_gain_variance_problem_bootstrap_ci95": [
+      0.0,
+      0.00673828125
+    ],
+    "range_excess_fraction": 0.05544333333333333,
+    "range_ge_0_5_fraction": 0.06666666666666667,
+    "range_null_expected_fraction": 0.011223333333333333,
+    "range_null_pvalue": 0.027597240275972403,
+    "same_budget_cells": 30,
+    "schema_version": 2,
+    "scoring": "exact-normalized pilot labels",
+    "state_count": 120,
+    "state_oracle_best_mvi_mean": 5.517578125e-05,
+    "state_oracle_headroom_mvi": 2.441406250000002e-07,
+    "warning": "Confirm symbolic/nontrivial equivalence with the official R3 judge before paper claims."
+  },
+  "exploratory": true,
+  "fixed_suite_ids": [
+    "math_suite_014",
+    "math_suite_024",
+    "math_suite_026",
+    "math_suite_038",
+    "math_suite_043"
+  ],
+  "limitations": [
+    "Five fixed suites are used for both critic calibration and allocator comparison.",
+    "Exp0C provides labels at spent_budget=4096, so scheduler decisions below that budget extrapolate the critic.",
+    "Scores use exact-normalized math answers; this is not an official R3-Bench leaderboard run.",
+    "A five-suite paired comparison is exploratory and cannot establish superiority."
+  ],
+  "method_summary": {
+    "direct_savi": {
+      "answer_success_rate": 0.0,
+      "mean_correct_per_suite": 0.0,
+      "spent_tokens": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "suite_scores": {
+        "math_suite_014": 0,
+        "math_suite_024": 0,
+        "math_suite_026": 0,
+        "math_suite_038": 0,
+        "math_suite_043": 0
+      },
+      "total_correct_answers": 0,
+      "trajectory_steps": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "equal": {
+      "answer_success_rate": 0.03333333333333333,
+      "mean_correct_per_suite": 0.2,
+      "spent_tokens": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "suite_scores": {
+        "math_suite_014": 1,
+        "math_suite_024": 0,
+        "math_suite_026": 0,
+        "math_suite_038": 0,
+        "math_suite_043": 0
+      },
+      "total_correct_answers": 1,
+      "trajectory_steps": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "frozen_index": {
+      "answer_success_rate": 0.0,
+      "mean_correct_per_suite": 0.0,
+      "spent_tokens": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "suite_scores": {
+        "math_suite_014": 0,
+        "math_suite_024": 0,
+        "math_suite_026": 0,
+        "math_suite_038": 0,
+        "math_suite_043": 0
+      },
+      "total_correct_answers": 0,
+      "trajectory_steps": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "native": {
+      "answer_success_rate": 0.23333333333333334,
+      "mean_correct_per_suite": 1.4,
+      "spent_tokens": [
+        2005,
+        1550,
+        776,
+        1683,
+        1619
+      ],
+      "suite_scores": {
+        "math_suite_014": 1,
+        "math_suite_024": 0,
+        "math_suite_026": 2,
+        "math_suite_038": 3,
+        "math_suite_043": 1
+      },
+      "total_correct_answers": 7,
+      "trajectory_steps": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "online_savi": {
+      "answer_success_rate": 0.03333333333333333,
+      "mean_correct_per_suite": 0.2,
+      "spent_tokens": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "suite_scores": {
+        "math_suite_014": 1,
+        "math_suite_024": 0,
+        "math_suite_026": 0,
+        "math_suite_038": 0,
+        "math_suite_043": 0
+      },
+      "total_correct_answers": 1,
+      "trajectory_steps": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "online_savi_no_voi": {
+      "answer_success_rate": 0.0,
+      "mean_correct_per_suite": 0.0,
+      "spent_tokens": [
+        4096,
+        4096,
+        4096,
+        4096,
+        4096
+      ],
+      "suite_scores": {
+        "math_suite_014": 0,
+        "math_suite_024": 0,
+        "math_suite_026": 0,
+        "math_suite_038": 0,
+        "math_suite_043": 0
+      },
+      "total_correct_answers": 0,
+      "trajectory_steps": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    }
+  },
+  "methods": [
+    "equal",
+    "native",
+    "direct_savi",
+    "online_savi_no_voi",
+    "online_savi",
+    "frozen_index"
+  ],
+  "model": {
+    "dtype": "bfloat16",
+    "finalizer_max_tokens": 96,
+    "id": "Qwen/Qwen3-8B",
+    "min_p": 0.0,
+    "native_max_tokens": 4096,
+    "native_thinking": false,
+    "path": "models/Qwen3-8B",
+    "quantization": "nf4",
+    "recent_window": 32,
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95
+  },
+  "paired_suite_bootstrap": {
+    "direct_savi_vs_equal": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "direct_savi_vs_frozen_index": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "direct_savi_vs_native": {
+      "ci_2_5": -2.4,
+      "ci_97_5": -0.6,
+      "mean_difference": -1.4,
+      "suite_count": 5
+    },
+    "direct_savi_vs_online_savi": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "direct_savi_vs_online_savi_no_voi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "equal_vs_direct_savi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    },
+    "equal_vs_frozen_index": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    },
+    "equal_vs_native": {
+      "ci_2_5": -2.2,
+      "ci_97_5": -0.2,
+      "mean_difference": -1.2,
+      "suite_count": 5
+    },
+    "equal_vs_online_savi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "equal_vs_online_savi_no_voi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    },
+    "frozen_index_vs_direct_savi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "frozen_index_vs_equal": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "frozen_index_vs_native": {
+      "ci_2_5": -2.4,
+      "ci_97_5": -0.6,
+      "mean_difference": -1.4,
+      "suite_count": 5
+    },
+    "frozen_index_vs_online_savi": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "frozen_index_vs_online_savi_no_voi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "native_vs_direct_savi": {
+      "ci_2_5": 0.6,
+      "ci_97_5": 2.4,
+      "mean_difference": 1.4,
+      "suite_count": 5
+    },
+    "native_vs_equal": {
+      "ci_2_5": 0.2,
+      "ci_97_5": 2.2,
+      "mean_difference": 1.2,
+      "suite_count": 5
+    },
+    "native_vs_frozen_index": {
+      "ci_2_5": 0.6,
+      "ci_97_5": 2.4,
+      "mean_difference": 1.4,
+      "suite_count": 5
+    },
+    "native_vs_online_savi": {
+      "ci_2_5": 0.2,
+      "ci_97_5": 2.2,
+      "mean_difference": 1.2,
+      "suite_count": 5
+    },
+    "native_vs_online_savi_no_voi": {
+      "ci_2_5": 0.6,
+      "ci_97_5": 2.4,
+      "mean_difference": 1.4,
+      "suite_count": 5
+    },
+    "online_savi_no_voi_vs_direct_savi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "online_savi_no_voi_vs_equal": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "online_savi_no_voi_vs_frozen_index": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "online_savi_no_voi_vs_native": {
+      "ci_2_5": -2.4,
+      "ci_97_5": -0.6,
+      "mean_difference": -1.4,
+      "suite_count": 5
+    },
+    "online_savi_no_voi_vs_online_savi": {
+      "ci_2_5": -0.6,
+      "ci_97_5": 0.0,
+      "mean_difference": -0.2,
+      "suite_count": 5
+    },
+    "online_savi_vs_direct_savi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    },
+    "online_savi_vs_equal": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.0,
+      "mean_difference": 0.0,
+      "suite_count": 5
+    },
+    "online_savi_vs_frozen_index": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    },
+    "online_savi_vs_native": {
+      "ci_2_5": -2.2,
+      "ci_97_5": -0.2,
+      "mean_difference": -1.2,
+      "suite_count": 5
+    },
+    "online_savi_vs_online_savi_no_voi": {
+      "ci_2_5": 0.0,
+      "ci_97_5": 0.6,
+      "mean_difference": 0.2,
+      "suite_count": 5
+    }
+  },
+  "reason": "Exp0C preregistered phenomenon gate failed; critic is calibrated on the same fixed suites.",
+  "shared_budget": 4096,
+  "status": "exploratory"
+}
